@@ -27,6 +27,9 @@ class Perceptron:
                    weights=weights, learning_rate=learning_rate)
         return self
 
+    def evaluate(self, inputs: np.ndarray):
+        return np.dot(inputs, self.__weights) + self.__bias
+
     def feed(self, inputs: np.ndarray):
         return 1 \
             if (np.dot(inputs, self.__weights) + self.__bias) > 0 \

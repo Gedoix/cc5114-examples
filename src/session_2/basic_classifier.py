@@ -64,8 +64,54 @@ def classify_plot(train: int = 1000):
     plt.show()
 
 
+def accuracies_plot(train: int = 100, training_points: int = 10, randomized: bool = True, testing_points: int = 100):
+    classifier = LinearClassifier(2.031, 12.576)
+
+    xs = np.array(range(int(-training_points / 2), int(training_points / 2) + 1))
+    yr = []
+    cs = []
+    for i in range(training_points):
+        yr.append(random.uniform(-200, 200))
+        cs.append(classifier.expected_classification(xs[i], yr[i]))
+
+    t_xs = np.array(range(int(-testing_points / 2), int(testing_points / 2) + 1))
+    t_yr = []
+    t_cs = []
+    for i in range(testing_points):
+        t_yr.append(random.uniform(-200, 200))
+        t_cs.append(classifier.expected_classification(t_xs[i], t_yr[i]))
+
+    accuracies = []
+    for time in range(train+1):
+
+        accuracies.append(0)
+
+        if time != 0:
+            for i in range(training_points):
+                classifier.train(xs[i], yr[i], cs[i])
+
+        for i in range(testing_points):
+            t_cr = classifier.classification(t_xs[i], t_yr[i])
+            accuracies[time] += 1 if t_cr == t_cs[i] else 0
+
+        accuracies[time] *= 100 / testing_points
+
+        if randomized:
+            for i in range(training_points):
+                yr[i] = random.uniform(-200, 200)
+                cs[i] = classifier.expected_classification(xs[i], yr[i])
+
+    fig, ax = plt.subplots()
+    ax.plot(range(train+1), accuracies)
+
+    plt.title("Accuracy of classifier v/s times trained for a total of " + str(train*training_points if randomized else train) + " times")
+    ax.grid(True)
+    plt.show()
+
+
 def main():
-    classify_plot(train=1000)
+    # classify_plot(train=1000)
+    accuracies_plot()
 
 
 if __name__ == '__main__':
