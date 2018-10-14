@@ -110,7 +110,7 @@ def accuracies_plot(train: int = 100, training_points: int = 10, randomized: boo
 
 
 def main():
-    # classify_plot(train=1000)
+    classify_plot()
     accuracies_plot()
 
 

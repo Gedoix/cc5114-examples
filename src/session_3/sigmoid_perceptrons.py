@@ -11,3 +11,15 @@ class SigmoidPerceptron(Perceptron):
 
     def feed(self, inputs: np.ndarray):
         return self.sigmoid(self.evaluate(inputs))
+
+def perceptron_logical_accuracies():
+    
+
+
+def sigmoid_logical_accuracies():
+
+
+
+if __name__ == '__main__':
+    perceptron_logical_acuracies()
+    sigmoid_logical_acuracies()
