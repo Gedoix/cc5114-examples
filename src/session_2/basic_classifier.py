@@ -12,7 +12,7 @@ class LinearClassifier:
     def __init__(self, slope: float, y_intercept: float):
         self.__slope = slope
         self.__y_intercept = y_intercept
-        self.__perceptron = Perceptron().built_with(weights_amount=2)
+        self._perceptron = Perceptron().built_with(weights_amount=2)
 
     def get_slope(self):
         return self.__slope
@@ -24,11 +24,11 @@ class LinearClassifier:
         return 1 if (y < (x*self.__slope+self.__y_intercept)) else 0
 
     def classification(self, x: float, y: float):
-        return self.__perceptron.feed(np.array([x, y]))
+        return 1 if self._perceptron.feed(np.array([x, y])) > 0.5 else 0
 
     def train(self, x: float, y: float, expected: int, times: int = 1):
         while times != 0:
-            self.__perceptron.learn(expected, np.array([x, y]))
+            self._perceptron.learn(expected, np.array([x, y]))
             times -= 1
 
     def auto_train(self, times: int = 1):
@@ -104,7 +104,8 @@ def accuracies_plot(train: int = 100, training_points: int = 10, randomized: boo
     fig, ax = plt.subplots()
     ax.plot(range(train+1), accuracies)
 
-    plt.title("Accuracy of classifier v/s times trained for a total of " + str(train*training_points if randomized else train) + " times")
+    plt.title("Accuracy of classifier v/s times trained for a total of " + str(train*training_points if randomized else
+                                                                               train) + " times")
     ax.grid(True)
     plt.show()
 
