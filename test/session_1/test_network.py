@@ -1,18 +1,18 @@
 from unittest import TestCase
 
-from session_1.basic_networks import Network, Perceptron, np
+from session_1.basic_networks import BasicNetwork, Perceptron, np
 
 
 class TestNetwork(TestCase):
 
     def test_feed(self):
-        n = Network(5,
-                    {1: [0, -1, -2],
+        n = BasicNetwork(5,
+                         {1: [0, -1, -2],
                      2: [0, -1, -2],
                      3: [0, -1, -2],
                      4: [1, 2, 3],
                      5: [1, 2, 3]},
-                    {1: Perceptron().built_with(bias=-5, weights=np.array([2, 2, 2])),
+                         {1: Perceptron().built_with(bias=-5, weights=np.array([2, 2, 2])),
                      2: Perceptron().built_with(bias=0, weights=np.array([2, 2, 2])),
                      3: Perceptron().built_with(bias=-5, weights=np.array([2, 2, 2])),
                      4: Perceptron().built_with(bias=-5, weights=np.array([2, 2, 2])),

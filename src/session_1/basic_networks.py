@@ -1,7 +1,7 @@
 from session_1.basic_perceptrons import *
 
 
-class Network:
+class BasicNetwork:
 
     def __init__(self, perceptron_amount: int, synapses: dict,
                  base_perceptrons: dict = None):
@@ -52,7 +52,7 @@ class Network:
         return np.array(results)
 
 
-class BitAdder(Network):
+class BitAdder(BasicNetwork):
 
     def __init__(self):
         super().__init__(5,
