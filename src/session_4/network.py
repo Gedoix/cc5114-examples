@@ -22,16 +22,23 @@ class Perceptron:
                                                   self.__bias))
         return self.__last_feed
 
-    def back_propagate(self, deltas: np.ndarray):
-        error = np.dot(self.__weights, deltas)
-        self.__delta = error * (self.__last_feed * (1.0 - self.__last_feed))
+    def back_propagate_from_error(self, error):
+        self.__delta = error * np.dot(self.__last_feed, (1.0 - self.__last_feed))
         self.__weights += (self.__learning_rate *
                            self.__delta *
                            self.__last_inputs)
         self.__bias += self.__learning_rate * self.__delta
 
-    def get_delta(self):
-        return self.__delta
+    def back_propagate(self, deltas, weights):
+        error = np.dot(deltas, weights)
+        self.__delta = error * np.dot(self.__last_feed, (1.0 - self.__last_feed))
+        self.__weights += (self.__learning_rate *
+                           self.__delta *
+                           self.__last_inputs)
+        self.__bias += self.__learning_rate * self.__delta
+
+    def get_delta_and_weight(self, index: int):
+        return self.__delta, self.__weights[index]
 
 
 class Layer:
@@ -48,6 +55,12 @@ class Layer:
         self.__last_feed = None
         self.__deltas = None
 
+    def __getitem__(self, item):
+        return self.__perceptrons[item]
+
+    def __len__(self):
+        return len(self.__perceptrons)
+
     def forward_propagate(self, inputs: np.ndarray):
         self.__last_inputs = inputs
         self.__last_feed = []
@@ -57,16 +70,24 @@ class Layer:
         self.__last_feed = np.array(self.__last_feed)
         return np.array(self.__last_feed)
 
-    def back_propagate(self, deltas: np.ndarray):
+    def back_propagate_from_error(self, error: np.ndarray):
         for i in range(len(self.__perceptrons)):
-            self.__perceptrons[i].back_propagate(deltas)
+            self.__perceptrons[i].back_propagate_from_error(error)
 
-    def get_deltas(self):
-        self.__deltas = []
+    def back_propagate(self, last_layer):
+
         for i in range(len(self.__perceptrons)):
-            self.__deltas.append(self.__perceptrons[i].get_delta())
-        self.__deltas = np.array(self.__deltas)
-        return self.__deltas
+            deltas, weights = last_layer.get_deltas_and_weights(i)
+            self.__perceptrons[i].back_propagate(deltas, weights)
+
+    def get_deltas_and_weights(self):
+        deltas = []
+        weights = []
+        for i in range(len(self.__perceptrons)):
+            delta, weight = self[i].get_delta_and_weight()
+            deltas.append(delta)
+            weights.append(weight)
+        return deltas, weights
 
 
 class Network:
@@ -106,13 +127,13 @@ class Network:
         return self.__results
 
     def back_propagare(self, expected_outputs: np.ndarray):
-        deltas = expected_outputs - self.__results
-        self.__output_layer.back_propagate(deltas)
-        deltas = self.__output_layer.get_deltas()
+        error = expected_outputs - self.__results
+        self.__output_layer.back_propagate_from_error(error)
+        last_layer = self.__output_layer
         for i in range(len(self.__hidden_layers)):
             j = len(self.__hidden_layers) - i - 1
-            self.__hidden_layers[j].back_propagate(deltas)
-            deltas = self.__hidden_layers[j].get_deltas()
+            self.__hidden_layers[j].back_propagate(last_layer)
+            last_layer = self.__hidden_layers[j]
 
     def train(self, inputs: np.ndarray, outputs: np.ndarray):
         self.forward_propagate(inputs)
