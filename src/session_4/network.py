@@ -15,27 +15,28 @@ class Perceptron:
         self.__delta = None
 
     def forward_propagate(self, inputs: np.ndarray):
-
         # Inputs are saved
         self.__last_inputs = inputs
 
         # Sigmoid function is calculated
-        self.__last_feed = math.exp(-np.logaddexp(0,
+        self.__last_feed = math.exp(-np.logaddexp(0.0,
                                                   -np.dot(inputs,
                                                           self.__weights) +
                                                   self.__bias))
+        assert isinstance(self.__last_feed, float)
         return self.__last_feed
 
     def back_propagate_from_error(self, error):
-        self.__delta = error * np.dot(self.__last_feed, (1.0 - self.__last_feed))
+        self.__delta = (error * np.dot(self.__last_feed, (1.0 - self.__last_feed)))[0]
         self.__weights += (self.__learning_rate *
                            self.__delta *
                            self.__last_inputs)
         self.__bias += self.__learning_rate * self.__delta
 
     def back_propagate(self, deltas, weights):
-        error = np.dot(deltas, weights)
-        self.__delta = error * np.dot(self.__last_feed, (1.0 - self.__last_feed))
+        error = float(np.dot(deltas, weights))
+        assert isinstance(error, float)
+        self.__delta = (error * (self.__last_feed * (1.0 - self.__last_feed)))
         self.__weights += (self.__learning_rate *
                            self.__delta *
                            self.__last_inputs)
@@ -120,12 +121,12 @@ class Network:
 
         # Auxiliary variables for learning are initialized to their defaults
         self.__results = None
-        self.__mean_true_positives = 0
-        self.__mean_false_negatives = 0
-        self.__mean_true_negatives = 0
-        self.__mean_false_positives = 0
-        self.__mean_absolute_error = 0
-        self.__mean_squared_error = 0
+        self.__mean_true_positives = 0.0
+        self.__mean_false_negatives = 0.0
+        self.__mean_true_negatives = 0.0
+        self.__mean_false_positives = 0.0
+        self.__mean_absolute_error = 0.0
+        self.__mean_squared_error = 0.0
 
     def forward_propagate(self, inputs: np.ndarray):
 
@@ -154,7 +155,6 @@ class Network:
 
         # Back propagation goes over all hidden layers
         for i in range(len(self.__hidden_layers)):
-
             # Layers are checked from last to first
             j = len(self.__hidden_layers) - i - 1
 
@@ -173,60 +173,63 @@ class Network:
         # The network learns
         self.back_propagate(outputs)
 
-    def generate_metrics(self, inputs: np.ndarray, outputs: np.ndarray):
-        self.__mean_true_positives = 0
-        self.__mean_true_negatives = 0
-        self.__mean_false_negatives = 0
-        self.__mean_false_positives = 0
-        self.__mean_absolute_error = 0
-        self.__mean_squared_error = 0
-        self.forward_propagate(inputs)
-        for index, output in enumerate(outputs):
-            self.__mean_absolute_error += np.sum(np.subtract(output, self.__results[index]))
-            self.__mean_squared_error += np.sum(np.subtract(output, self.__results[index])) ^ 2
-            if self.__results[index] == output:
-                if output == 1.0:
-                    self.__mean_true_positives += 1
+    def train_epoch(self, inputs: np.ndarray, outputs: np.ndarray):
+        assert np.size(inputs[0, :]) == np.size(outputs[0, :])
+        for i in range(np.size(inputs[0, :])):
+            self.train(inputs[:, i], outputs[:, i])
+
+    def generate_metrics_epoch(self, inputs: np.ndarray, outputs: np.ndarray):
+        assert np.size(inputs[0, :]) == np.size(outputs[0, :])
+        self.__mean_true_positives = 0.0
+        self.__mean_true_negatives = 0.0
+        self.__mean_false_negatives = 0.0
+        self.__mean_false_positives = 0.0
+        self.__mean_absolute_error = 0.0
+        self.__mean_squared_error = 0.0
+        for i in range(np.size(inputs[0, :])):
+            self.forward_propagate(inputs[:, i])
+            for index, output in enumerate(outputs[:, i]):
+                self.__mean_absolute_error += np.sum(np.subtract(output, self.__results[index]))
+                self.__mean_squared_error += np.sum(np.subtract(output, self.__results[index])) ** 2.0
+                if self.__results[index] == output:
+                    if output == 1.0:
+                        self.__mean_true_positives += 1.0
+                    else:
+                        self.__mean_true_negatives += 1.0
                 else:
-                    self.__mean_true_negatives += 1
-            else:
-                if output == 1.0:
-                    self.__mean_false_negatives += 1
-                else:
-                    self.__mean_false_positives += 1
-        self.__mean_true_positives /= outputs.size
-        self.__mean_true_negatives /= outputs.size
-        self.__mean_false_negatives /= outputs.size
-        self.__mean_false_positives /= outputs.size
-        self.__mean_absolute_error /= outputs.size
-        self.__mean_squared_error /= outputs.size
+                    if output == 1.0:
+                        self.__mean_false_negatives += 1.0
+                    else:
+                        self.__mean_false_positives += 1.0
+        self.__mean_true_positives /= np.size(inputs[0, :])
+        self.__mean_true_negatives /= np.size(inputs[0, :])
+        self.__mean_false_negatives /= np.size(inputs[0, :])
+        self.__mean_false_positives /= np.size(inputs[0, :])
+        self.__mean_absolute_error /= np.size(inputs[0, :])
+        self.__mean_squared_error /= np.size(inputs[0, :])
 
     def get_accuracy(self):
-        return (self.__mean_true_positives +
-                self.__mean_true_negatives) / (
-                       self.__mean_true_positives +
-                       self.__mean_true_negatives +
-                       self.__mean_false_positives +
-                       self.__mean_false_negatives
-               )
+        return 0.0 if (self.__mean_true_positives + self.__mean_true_negatives) == 0.0 else (
+                (self.__mean_true_positives + self.__mean_true_negatives) / (
+                 self.__mean_true_positives +
+                 self.__mean_true_negatives +
+                 self.__mean_false_positives +
+                 self.__mean_false_negatives))
 
     def get_precision(self):
-        return self.__mean_true_positives / (
-                self.__mean_true_positives +
-                self.__mean_false_positives
-        )
+        return 0.0 if self.__mean_true_positives == 0.0 else (
+                self.__mean_true_positives / (self.__mean_true_positives +
+                                              self.__mean_false_positives))
 
     def get_recall(self):
-        return self.__mean_true_positives / (
-                self.__mean_true_positives +
-                self.__mean_false_negatives
-        )
+        return 0.0 if self.__mean_true_positives == 0.0 else (
+                self.__mean_true_positives / (self.__mean_true_positives +
+                                              self.__mean_false_negatives))
 
     def get_specificity(self):
-        return self.__mean_true_negatives / (
-                self.__mean_true_negatives +
-                self.__mean_false_positives
-        )
+        return 0.0 if self.__mean_true_negatives == 0.0 else (
+                self.__mean_true_negatives / (self.__mean_true_negatives +
+                                              self.__mean_false_positives))
 
     def get_f1(self):
         p = self.get_precision()
@@ -234,31 +237,41 @@ class Network:
         return 2 * r * p / (r + p)
 
 
-def main(training_amount: int=10000, testing_amount: int=500):
-    network = Network(2, [2, 3, 2], 1)
-    training_points = np.random.uniform(-100, 100, (2, training_amount))
-    testing_points = np.random.uniform(-100, 100, (2, testing_amount))
+def main(training_points_amount: int = 1000, testing_points_amount: int = 200, training_epochs: int = 100):
+    network = Network(2, [1], 1, 0.3)
+
+    training_points = np.random.uniform(-100, 100, (2, training_points_amount))
+    testing_points = np.random.uniform(-100, 100, (2, testing_points_amount))
+
     slope = 2.0
     y_intercept = -1.0
+
     one_array = np.array([1.0])
     zero_array = np.array([0.0])
-    training_classes = np.zeros(training_amount)
-    for i, c in enumerate(training_classes):
-        training_classes[i] = one_array if training_points[1, i] > y_intercept+slope*training_points[0, i] \
-            else zero_array
-    testing_classes = np.zeros(testing_amount)
-    for i, c in enumerate(testing_classes):
-        testing_classes[i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
+
+    training_classes = np.zeros((1, training_points_amount))
+    for i, c in enumerate(training_classes[0, :]):
+        training_classes[0, i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
             else zero_array
 
-    for i in range(training_amount):
-        network.train(training_points[:, i], training_classes[i])
-        p = 0
-        for j in range(testing_amount):
-            network.generate_metrics(testing_points[:, j], testing_classes[j])
-            p += network.get_precision()
-        p /= testing_amount
-        print("Precision for step ", i, " equals = ", p)
+    testing_classes = np.zeros((1, testing_points_amount))
+    for i, c in enumerate(testing_classes[0, :]):
+        testing_classes[0, i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
+            else zero_array
+
+    for i in range(training_epochs):
+        network.train_epoch(training_points, training_classes)
+        network.generate_metrics_epoch(testing_points, testing_classes)
+        a = network.get_accuracy()
+        p = network.get_precision()
+        r = network.get_recall()
+        s = network.get_specificity()
+        print("--------------------------------------------------------------")
+        print("Accuracy for epoch ", i + 1, " equals = ", a)
+        print("Precision for epoch ", i + 1, " equals = ", p)
+        print("Recall for epoch ", i + 1, " equals = ", r)
+        print("Specificity for epoch ", i + 1, " equals = ", s)
+        print("--------------------------------------------------------------")
 
 
 if __name__ == '__main__':
