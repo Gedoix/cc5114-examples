@@ -220,10 +220,10 @@ class Network:
     def get_accuracy(self):
         return 0.0 if (self.__mean_true_positives + self.__mean_true_negatives) == 0.0 else (
                 (self.__mean_true_positives + self.__mean_true_negatives) / (
-                 self.__mean_true_positives +
-                 self.__mean_true_negatives +
-                 self.__mean_false_positives +
-                 self.__mean_false_negatives))
+                self.__mean_true_positives +
+                self.__mean_true_negatives +
+                self.__mean_false_positives +
+                self.__mean_false_negatives))
 
     def get_precision(self):
         return 0.0 if self.__mean_true_positives == 0.0 else (
@@ -245,9 +245,14 @@ class Network:
         r = self.get_recall()
         return 2 * r * p / (r + p)
 
+    def get_mean_error(self):
+        return self.__mean_absolute_error
+
+    def get_mean_squared_error(self):
+        return self.__mean_squared_error
+
 
 def main(training_points_amount: int = 200, testing_points_amount: int = 1000, training_epochs: int = 100):
-
     training_plot = False
     testing_plot = False
     progress_plot = True
@@ -263,13 +268,13 @@ def main(training_points_amount: int = 200, testing_points_amount: int = 1000, t
     line = np.zeros((2, 200))
 
     for i in range(200):
-        line[0, i] = i-100
+        line[0, i] = i - 100
         line[1, i] = y_intercept + slope * line[0, i]
 
     for n in range(training_epochs):
 
-        training_points = np.random.uniform(-100*int(slope), 100*int(slope), (2, training_points_amount))
-        testing_points = np.random.uniform(-100*int(slope), 100*int(slope), (2, testing_points_amount))
+        training_points = np.random.uniform(-100 * int(slope), 100 * int(slope), (2, training_points_amount))
+        testing_points = np.random.uniform(-100 * int(slope), 100 * int(slope), (2, testing_points_amount))
 
         # Training Classes
 
@@ -283,11 +288,10 @@ def main(training_points_amount: int = 200, testing_points_amount: int = 1000, t
             for i, c in enumerate(training_classes[0, :]):
                 training_classes[0, i] = one_array \
                     if training_points[1, i] > \
-                    y_intercept + slope * training_points[0, i] \
+                       y_intercept + slope * training_points[0, i] \
                     else zero_array
                 ax.scatter(training_points[0, i], training_points[1, i],
-                           color='b' if training_classes[0, i] == one_array else 'r',
-                           label='correct' if training_classes[0, i] == one_array else 'wrong')
+                           color='b' if training_classes[0, i] == one_array else 'r')
 
             plt.title("Training Reference for Epoch " + str(n))
             ax.grid(True)
@@ -299,7 +303,7 @@ def main(training_points_amount: int = 200, testing_points_amount: int = 1000, t
             for i, c in enumerate(training_classes[0, :]):
                 training_classes[0, i] = one_array \
                     if training_points[1, i] > \
-                    y_intercept + slope * training_points[0, i] \
+                       y_intercept + slope * training_points[0, i] \
                     else zero_array
 
         # Testing Classes
@@ -314,11 +318,10 @@ def main(training_points_amount: int = 200, testing_points_amount: int = 1000, t
             for i, c in enumerate(testing_classes[0, :]):
                 testing_classes[0, i] = one_array \
                     if testing_points[1, i] > \
-                    y_intercept + slope * testing_points[0, i] \
+                       y_intercept + slope * testing_points[0, i] \
                     else zero_array
                 ax.scatter(testing_points[0, i], testing_points[1, i],
-                           color='b' if testing_classes[0, i] == one_array else 'r',
-                           label='correct' if testing_classes[0, i] == one_array else 'wrong')
+                           color='b' if testing_classes[0, i] == one_array else 'r')
 
             plt.title("Testing Reference for Epoch " + str(n))
             ax.grid(True)
@@ -330,7 +333,7 @@ def main(training_points_amount: int = 200, testing_points_amount: int = 1000, t
             for i, c in enumerate(testing_classes[0, :]):
                 testing_classes[0, i] = one_array \
                     if testing_points[1, i] > \
-                    y_intercept + slope * testing_points[0, i] \
+                       y_intercept + slope * testing_points[0, i] \
                     else zero_array
 
         # Training Results
@@ -347,9 +350,31 @@ def main(training_points_amount: int = 200, testing_points_amount: int = 1000, t
             for i in range(testing_points_amount):
                 ax.scatter(testing_points[0, i], testing_points[1, i],
                            color='b' if result[0, i] == 1.0 else 'r',
-                           label='correct' if result[0, i] == 1.0 else 'wrong')
+                           label='correct' if result[0, i] == testing_classes[0, i] else 'wrong')
+
+            a = network.get_accuracy()
+            p = network.get_precision()
+            r = network.get_recall()
+            s = network.get_specificity()
+            ae = network.get_mean_error()
+            se = network.get_mean_squared_error()
 
             plt.title("Training Result for Epoch " + str(n))
+            ax.text(25, -150,
+                    ("Accuracy for epoch " + str(n + 1) +
+                     " equals                  = " + str(a) +
+                     "\nPrecision for epoch " + str(n + 1) +
+                     " equals                 = " + str(p) +
+                     "\nRecall for epoch " + str(n + 1) +
+                     " equals                     = " + str(r) +
+                     "\nSpecificity for epoch " + str(n + 1) +
+                     " equals               = " + str(s) +
+                     "\nMean Error for epoch " + str(n + 1) +
+                     " equals               = " + str(ae) +
+                     "\nMean Squared Error for epoch " + str(n + 1) +
+                     " equals = " + str(se)),
+                    fontsize=5,
+                    bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
             ax.grid(True)
             plt.show()
 
@@ -358,17 +383,21 @@ def main(training_points_amount: int = 200, testing_points_amount: int = 1000, t
             network.train_epoch(training_points, training_classes)
             network.generate_metrics_epoch(testing_points, testing_classes)
 
-        a = network.get_accuracy()
-        p = network.get_precision()
-        r = network.get_recall()
-        s = network.get_specificity()
+            a = network.get_accuracy()
+            p = network.get_precision()
+            r = network.get_recall()
+            s = network.get_specificity()
+            ae = network.get_mean_error()
+            se = network.get_mean_squared_error()
 
-        print("--------------------------------------------------------------")
-        print("Accuracy for epoch ", n + 1, " equals = ", a)
-        print("Precision for epoch ", n + 1, " equals = ", p)
-        print("Recall for epoch ", n + 1, " equals = ", r)
-        print("Specificity for epoch ", n + 1, " equals = ", s)
-        print("--------------------------------------------------------------")
+            print("---------------------------------------------------------")
+            print("Accuracy for epoch ", n + 1, " equals           = ", a)
+            print("Precision for epoch ", n + 1, " equals          = ", p)
+            print("Recall for epoch ", n + 1, " equals             = ", r)
+            print("Specificity for epoch ", n + 1, " equals        = ", s)
+            print("Mean Error for epoch ", n + 1, " equals         = ", ae)
+            print("Mean Squared Error for epoch ", n + 1, " equals = ", se)
+            print("---------------------------------------------------------")
 
 
 if __name__ == '__main__':
