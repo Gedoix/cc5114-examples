@@ -27,7 +27,7 @@ class Perceptron:
         return self.__last_feed
 
     def back_propagate_from_error(self, error):
-        self.__delta = (error * np.dot(self.__last_feed, (1.0 - self.__last_feed)))[0]
+        self.__delta = error * self.__last_feed * (1.0 - self.__last_feed)
         self.__weights += (self.__learning_rate *
                            self.__delta *
                            self.__last_inputs)
@@ -75,8 +75,8 @@ class Layer:
         return np.array(self.__last_feed)
 
     def back_propagate_from_error(self, error: np.ndarray):
-        for perceptron in self.__perceptrons:
-            perceptron.back_propagate_from_error(error)
+        for i, perceptron in enumerate(self.__perceptrons):
+            perceptron.back_propagate_from_error(error[i])
 
     def back_propagate(self, last_layer):
         for index, perceptron in enumerate(self.__perceptrons):
@@ -238,7 +238,7 @@ class Network:
 
 
 def main(training_points_amount: int = 1000, testing_points_amount: int = 200, training_epochs: int = 100):
-    network = Network(2, [1], 1, 0.3)
+    network = Network(2, [10], 1, 0.15)
 
     training_points = np.random.uniform(-100, 100, (2, training_points_amount))
     testing_points = np.random.uniform(-100, 100, (2, testing_points_amount))
