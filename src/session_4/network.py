@@ -139,7 +139,11 @@ class Network:
                 .forward_propagate(self.__results)
 
         # The results of the last layer are extracted
-        self.__results = self.__output_layer.forward_propagate(self.__results).round(0)
+        self.__results = self.__output_layer.forward_propagate(self.__results)
+
+        for i, result in enumerate(self.__results):
+            self.__results[i] = 1.0 if result >= 0.5 else 0.0
+
         return self.__results
 
     def back_propagate(self, expected_outputs: np.ndarray):
@@ -237,11 +241,8 @@ class Network:
         return 2 * r * p / (r + p)
 
 
-def main(training_points_amount: int = 1000, testing_points_amount: int = 200, training_epochs: int = 100):
+def main(training_points_amount: int = 10000, testing_points_amount: int = 300, training_epochs: int = 100):
     network = Network(2, [10], 1, 0.15)
-
-    training_points = np.random.uniform(-100, 100, (2, training_points_amount))
-    testing_points = np.random.uniform(-100, 100, (2, testing_points_amount))
 
     slope = 2.0
     y_intercept = -1.0
@@ -249,23 +250,29 @@ def main(training_points_amount: int = 1000, testing_points_amount: int = 200, t
     one_array = np.array([1.0])
     zero_array = np.array([0.0])
 
-    training_classes = np.zeros((1, training_points_amount))
-    for i, c in enumerate(training_classes[0, :]):
-        training_classes[0, i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
-            else zero_array
-
-    testing_classes = np.zeros((1, testing_points_amount))
-    for i, c in enumerate(testing_classes[0, :]):
-        testing_classes[0, i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
-            else zero_array
-
     for i in range(training_epochs):
+
+        training_points = np.random.uniform(-100, 100, (2, training_points_amount))
+        testing_points = np.random.uniform(-100, 100, (2, testing_points_amount))
+
+        training_classes = np.zeros((1, training_points_amount))
+        for i, c in enumerate(training_classes[0, :]):
+            training_classes[0, i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
+                else zero_array
+
+        testing_classes = np.zeros((1, testing_points_amount))
+        for i, c in enumerate(testing_classes[0, :]):
+            testing_classes[0, i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
+                else zero_array
+
         network.train_epoch(training_points, training_classes)
         network.generate_metrics_epoch(testing_points, testing_classes)
+
         a = network.get_accuracy()
         p = network.get_precision()
         r = network.get_recall()
         s = network.get_specificity()
+
         print("--------------------------------------------------------------")
         print("Accuracy for epoch ", i + 1, " equals = ", a)
         print("Precision for epoch ", i + 1, " equals = ", p)
