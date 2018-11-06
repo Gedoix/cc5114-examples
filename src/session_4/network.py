@@ -3,6 +3,8 @@ import random
 
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 
 class Perceptron:
 
@@ -190,8 +192,9 @@ class Network:
         self.__mean_false_positives = 0.0
         self.__mean_absolute_error = 0.0
         self.__mean_squared_error = 0.0
+        results = np.zeros((np.size(outputs[:, 0]), np.size(outputs[0, :])))
         for i in range(np.size(inputs[0, :])):
-            self.forward_propagate(inputs[:, i])
+            results[:, i] = self.forward_propagate(inputs[:, i])
             for index, output in enumerate(outputs[:, i]):
                 self.__mean_absolute_error += np.sum(np.subtract(output, self.__results[index]))
                 self.__mean_squared_error += np.sum(np.subtract(output, self.__results[index])) ** 2.0
@@ -211,6 +214,8 @@ class Network:
         self.__mean_false_positives /= np.size(inputs[0, :])
         self.__mean_absolute_error /= np.size(inputs[0, :])
         self.__mean_squared_error /= np.size(inputs[0, :])
+
+        return results
 
     def get_accuracy(self):
         return 0.0 if (self.__mean_true_positives + self.__mean_true_negatives) == 0.0 else (
@@ -241,8 +246,13 @@ class Network:
         return 2 * r * p / (r + p)
 
 
-def main(training_points_amount: int = 10000, testing_points_amount: int = 300, training_epochs: int = 100):
-    network = Network(2, [10], 1, 0.15)
+def main(training_points_amount: int = 200, testing_points_amount: int = 1000, training_epochs: int = 100):
+
+    training_plot = False
+    testing_plot = False
+    progress_plot = True
+
+    network = Network(2, [3, 5, 3], 1, 0.025)
 
     slope = 2.0
     y_intercept = -1.0
@@ -250,23 +260,103 @@ def main(training_points_amount: int = 10000, testing_points_amount: int = 300, 
     one_array = np.array([1.0])
     zero_array = np.array([0.0])
 
-    for i in range(training_epochs):
+    line = np.zeros((2, 200))
 
-        training_points = np.random.uniform(-100, 100, (2, training_points_amount))
-        testing_points = np.random.uniform(-100, 100, (2, testing_points_amount))
+    for i in range(200):
+        line[0, i] = i-100
+        line[1, i] = y_intercept + slope * line[0, i]
 
-        training_classes = np.zeros((1, training_points_amount))
-        for i, c in enumerate(training_classes[0, :]):
-            training_classes[0, i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
-                else zero_array
+    for n in range(training_epochs):
 
-        testing_classes = np.zeros((1, testing_points_amount))
-        for i, c in enumerate(testing_classes[0, :]):
-            testing_classes[0, i] = one_array if training_points[1, i] > y_intercept + slope * training_points[0, i] \
-                else zero_array
+        training_points = np.random.uniform(-100*int(slope), 100*int(slope), (2, training_points_amount))
+        testing_points = np.random.uniform(-100*int(slope), 100*int(slope), (2, testing_points_amount))
 
-        network.train_epoch(training_points, training_classes)
-        network.generate_metrics_epoch(testing_points, testing_classes)
+        # Training Classes
+
+        if training_plot:
+
+            _, ax = plt.subplots()
+
+            ax.plot(line[0, :], line[1, :])
+
+            training_classes = np.zeros((1, training_points_amount))
+            for i, c in enumerate(training_classes[0, :]):
+                training_classes[0, i] = one_array \
+                    if training_points[1, i] > \
+                    y_intercept + slope * training_points[0, i] \
+                    else zero_array
+                ax.scatter(training_points[0, i], training_points[1, i],
+                           color='b' if training_classes[0, i] == one_array else 'r',
+                           label='correct' if training_classes[0, i] == one_array else 'wrong')
+
+            plt.title("Training Reference for Epoch " + str(n))
+            ax.grid(True)
+            plt.show()
+
+        else:
+
+            training_classes = np.zeros((1, training_points_amount))
+            for i, c in enumerate(training_classes[0, :]):
+                training_classes[0, i] = one_array \
+                    if training_points[1, i] > \
+                    y_intercept + slope * training_points[0, i] \
+                    else zero_array
+
+        # Testing Classes
+
+        if testing_plot:
+
+            _, ax = plt.subplots()
+
+            ax.plot(line[0, :], line[1, :])
+
+            testing_classes = np.zeros((1, testing_points_amount))
+            for i, c in enumerate(testing_classes[0, :]):
+                testing_classes[0, i] = one_array \
+                    if testing_points[1, i] > \
+                    y_intercept + slope * testing_points[0, i] \
+                    else zero_array
+                ax.scatter(testing_points[0, i], testing_points[1, i],
+                           color='b' if testing_classes[0, i] == one_array else 'r',
+                           label='correct' if testing_classes[0, i] == one_array else 'wrong')
+
+            plt.title("Testing Reference for Epoch " + str(n))
+            ax.grid(True)
+            plt.show()
+
+        else:
+
+            testing_classes = np.zeros((1, testing_points_amount))
+            for i, c in enumerate(testing_classes[0, :]):
+                testing_classes[0, i] = one_array \
+                    if testing_points[1, i] > \
+                    y_intercept + slope * testing_points[0, i] \
+                    else zero_array
+
+        # Training Results
+
+        if progress_plot:
+
+            _, ax = plt.subplots()
+
+            ax.plot(line[0, :], line[1, :])
+
+            network.train_epoch(training_points, training_classes)
+            result = network.generate_metrics_epoch(testing_points, testing_classes)
+
+            for i in range(testing_points_amount):
+                ax.scatter(testing_points[0, i], testing_points[1, i],
+                           color='b' if result[0, i] == 1.0 else 'r',
+                           label='correct' if result[0, i] == 1.0 else 'wrong')
+
+            plt.title("Training Result for Epoch " + str(n))
+            ax.grid(True)
+            plt.show()
+
+        else:
+
+            network.train_epoch(training_points, training_classes)
+            network.generate_metrics_epoch(testing_points, testing_classes)
 
         a = network.get_accuracy()
         p = network.get_precision()
@@ -274,10 +364,10 @@ def main(training_points_amount: int = 10000, testing_points_amount: int = 300, 
         s = network.get_specificity()
 
         print("--------------------------------------------------------------")
-        print("Accuracy for epoch ", i + 1, " equals = ", a)
-        print("Precision for epoch ", i + 1, " equals = ", p)
-        print("Recall for epoch ", i + 1, " equals = ", r)
-        print("Specificity for epoch ", i + 1, " equals = ", s)
+        print("Accuracy for epoch ", n + 1, " equals = ", a)
+        print("Precision for epoch ", n + 1, " equals = ", p)
+        print("Recall for epoch ", n + 1, " equals = ", r)
+        print("Specificity for epoch ", n + 1, " equals = ", s)
         print("--------------------------------------------------------------")
 
 
