@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from session_1.basic_perceptrons import *
+from basic_perceptrons.basic_perceptrons import *
 
 
 class TestPerceptron(TestCase):

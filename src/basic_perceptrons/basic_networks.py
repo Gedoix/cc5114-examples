@@ -1,4 +1,4 @@
-from session_1.basic_perceptrons import *
+from basic_perceptrons.basic_perceptrons import *
 
 
 class BasicNetwork:
@@ -6,13 +6,14 @@ class BasicNetwork:
     def __init__(self, perceptron_amount: int, synapses: dict,
                  base_perceptrons: dict = None):
         """
+        Initializer for the network
         synapses format:    {p3:[p1, p2], p2:[p1]} describes a network where
                                 p1 feeds from p1 and p2, and p2 feeds from p1
                             negative numbers and 0 denote input indices
                             positive numbers denote perceptrons
-        :param perceptron_amount:
-        :param synapses:
-        :param base_perceptrons:
+        :param perceptron_amount:   Total amount of perceptrons allowed
+        :param synapses:            Mapping of directed synapses between perceptrons within the network
+        :param base_perceptrons:    Base perceptrons to use when generating the network
         """
         self.__synapses = synapses
         self.__perceptrons = {}
@@ -36,6 +37,11 @@ class BasicNetwork:
                 self.__outputs.append(perceptron1)
 
     def feed(self, inputs: np.ndarray):
+        """
+        Calculates the network's output by forward-propagating values through the perceptrons
+        :param inputs:  Binary inputs for the network
+        :return:        Binary output
+        """
         activations = {}
         for perceptron in self.__synapses.keys():
             specific_inputs = []
@@ -55,6 +61,9 @@ class BasicNetwork:
 class BitAdder(BasicNetwork):
 
     def __init__(self):
+        """
+        Initializer for a 2-input and 2-output binary bit adder network
+        """
         super().__init__(5,
                          {1: [-1, 0],
                           2: [0, 1],

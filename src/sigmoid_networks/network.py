@@ -252,7 +252,7 @@ class Network:
         return self.__mean_squared_error
 
 
-def main(training_points_amount: int = 200, testing_points_amount: int = 1000, training_epochs: int = 100):
+def main(training_points_amount: int = 2000, testing_points_amount: int = 1000, training_epochs: int = 1000):
     training_plot = False
     testing_plot = False
     progress_plot = True

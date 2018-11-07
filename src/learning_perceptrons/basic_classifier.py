@@ -4,7 +4,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from session_1.basic_perceptrons import Perceptron
+from basic_perceptrons.basic_perceptrons import Perceptron
 
 
 class LinearClassifier:
