@@ -27,7 +27,7 @@ class SigmoidPerceptron(Perceptron):
         """
         return math.exp(-np.logaddexp(0, -z))
 
-    def feed(self, inputs: np.ndarray):
+    def feed(self, inputs: np.ndarray) -> float:
         """
         Override of the feed method, using the sigmoid function
         :param inputs:  Inputs to the perceptron
