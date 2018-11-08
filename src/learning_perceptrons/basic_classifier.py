@@ -10,28 +10,66 @@ from basic_perceptrons.basic_perceptrons import Perceptron
 class LinearClassifier:
 
     def __init__(self, slope: float, y_intercept: float):
+        """
+        Initializer for a simple classifier for classification based on a line
+        Uses the Perceptron class from the basic_perceptron package
+        :param slope:           Slope of the line
+        :param y_intercept:     Interception of the line with the y axis
+        """
         self.__slope = slope
         self.__y_intercept = y_intercept
         self._perceptron = Perceptron().built_with(weights_amount=2)
 
     def get_slope(self):
+        """
+        Returns slope of the expected classifier
+        :return:    Analytical slope
+        """
         return self.__slope
 
     def get_y_intercept(self):
+        """
+        Returns interception with the y axis for the expected classifier's line
+        :return:    Analytical y interception
+        """
         return self.__y_intercept
 
     def expected_classification(self, x: float, y: float):
+        """
+        Returns the expected classification of a point calculated from the analytical line given
+        :param x:   X coordinate of the point
+        :param y:   Y coordinate of the point
+        :return:    Binary classification, 1 if below the line or 0 if above
+        """
         return 1 if (y < (x*self.__slope+self.__y_intercept)) else 0
 
     def classification(self, x: float, y: float):
+        """
+        Returns the classification of a point calculated from using a learning perceptron
+        :param x:   X coordinate of the point
+        :param y:   Y coordinate of the point
+        :return:    Binary classification, 1 if below the line or 0 if above
+        """
         return 1 if self._perceptron.feed(np.array([x, y])) > 0.5 else 0
 
     def train(self, x: float, y: float, expected: int, times: int = 1):
+        """
+        Automatically trains the classifier's perceptron based on a certain input and output for a specific
+        amount of times
+        :param x:           X coordinate of the point
+        :param y:           Y coordinate of the point
+        :param expected:    Expected classification for the point
+        :param times:       Time to train on the example
+        """
         while times != 0:
             self._perceptron.learn(expected, np.array([x, y]))
             times -= 1
 
     def auto_train(self, times: int = 1):
+        """
+        Automatically trains the classifier on randomized points using the analytical line
+        :param times:   Time to train on an example (new example for every time)
+        """
         while times != 0:
             x = random.uniform(-100, 100)
             y = random.uniform(-100, 100)
@@ -41,6 +79,10 @@ class LinearClassifier:
 
 
 def classify_plot(train: int = 1000):
+    """
+    Generates a plot marking in red all the wrongly classified points and in blue all of the successful ones
+    :param train:   Amount of training to be done
+    """
     classifier = LinearClassifier(2.031, 12.576)
     classifier.auto_train(times=train)
     xs = np.array(range(-100, 100))
@@ -65,6 +107,10 @@ def classify_plot(train: int = 1000):
 
 
 def accuracies_plot(train: int = 100, training_points: int = 10, randomized: bool = True, testing_points: int = 100):
+    """
+    Generates a plot marking in red all the wrongly classified points and in blue all of the successful ones
+    :param train:   Amount of training to be done
+    """
     classifier = LinearClassifier(2.031, 12.576)
 
     xs = np.array(range(int(-training_points / 2), int(training_points / 2) + 1))
