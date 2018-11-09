@@ -78,7 +78,7 @@ def data_partitioner(attributes: np.ndarray, classes: np.ndarray, proportion: fl
         np.array(training_classes), np.array(testing_classes)
 
 
-def main(epochs: int = 200, seed: int = None, disable_bar: bool = False):
+def main(epochs: int = 500, seed: int = None, disable_bar: bool = False):
     attributes, classes = data_getter(disable_bar=disable_bar)
     attributes = data_normalizer(attributes, disable_bar=disable_bar)
     train_inputs, test_inputs, train_outputs, test_outputs = data_partitioner(attributes, classes, 0.1, seed=seed)
@@ -118,7 +118,7 @@ def main(epochs: int = 200, seed: int = None, disable_bar: bool = False):
         if key not in ["Mean error", "Mean squared error"]:
             ax.set_ylim([0, 100])
 
-        plt.title(key + " of classifier v/s epochs trained for a total of " + str(epochs) + " training epochs")
+        plt.title(key + " of classifier v/s epochs trained for a total of " + str(epochs) + " epochs")
         ax.grid(True)
         plt.show()
 
