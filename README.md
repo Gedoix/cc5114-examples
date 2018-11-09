@@ -85,7 +85,7 @@ local machine for development and testing purposes.
 
 ### Prerequisites
 
-This repo's project was and is being developed using [Python 3.7](), together 
+This repo's project was and is being developed using [Python 3.7](https://www.python.org/downloads/), together 
 with the packages [numpy](http://www.numpy.org/), 
 [matplotlib](https://matplotlib.org/) and [tqdm](https://github.com/tqdm/tqdm).
 
@@ -121,7 +121,7 @@ tutorial
 * After all the already mentioned is installed, the project needs to be opened,
  so PyCharm can configure the interpreter to Python 3.7
  
-* Accessing the project settings inside the toolbar going into the 
+* Accessing the project settings inside the toolbar, going into the 
 `interpreter` tab, and clicking on the plus `add package` button will allow to 
 easily install [numpy](http://www.numpy.org/), 
 [matplotlib](https://matplotlib.org/) and [tqdm](https://github.com/tqdm/tqdm),
@@ -131,34 +131,107 @@ just by searching them by name.
 
 ## Running the tests
 
-Running the tests
+To run the automated unit tests all that needs to be done is 
+to right-click the `test` directory and select the `Run 'Unittest in test' 
+with Coverage` option, a coverage suite should open along with a console 
+stating `Tests passed: 22 of 22 tests`.
+
+This automated tests only offer basic coverage of some of the more advanced 
+methods in the project, to run some of the more lengthy (and time consuming) 
+tests all that's needed is to right-click the Python executable files 
+containing them and click `Run 'file_to_execute.py'`. The files that can be 
+run are:
+
+* `learning_perceptrons.basic_classifier.py`
+
+* `sigmoid_perceptrons.sigmoid_perceptrons.py`
+
+* `sigmoid_perceptrons.logic_gate_training.py`
+
+* `sigmoid_networks.network.py`
+
+* `dataset_predictor.network_prediction.py`
+
+All of these files can generate plots and printed proof of the workings
+of the code being tested
+
+## Further Information on dataset_predictor.network_prediction.py
+
+The file first loads all data in the dataset `letter-recognition.data`,
+which can be found [here](https://archive.ics.uci.edu/ml/datasets/Letter+Recognition)
+
+This dataset contains a total of 20000 instances each with 16 attributes 
+generated from a set of distorted fonts, these attributes count features of 
+said fonts such as `y-edge mean edge count bottom to top`.
+
+An extra column was added to the data containing the classification of the 
+instance, therefore the letter that the classifier should be able to recognize
+
+It has no missing values, and all attributes except for the classification are
+integers
+
+Before starting the prediction process the classification expected results are
+converted to binary vectors, where the i-th dimension of the vector is a 1 if 
+and only if the instance is classified into the i-th letter of the alphabet
+
+The attributes were also normalized after finding their max and min values
+
+After this a randomized partition of the data is extracted for testing 
+purposes later
+
+Then the classifier network is built with a total of 4 hidden layers and 
+90 perceptrons
+
+The training partition of the data is then used as a training epoch and the 
+network trains for 500 epochs, producing the following outputs:
+
+![Image1](plots/myplot021.png)
+
+![Image1](plots/myplot022.png)
+
+![Image1](plots/myplot023.png)
+
+![Image1](plots/myplot024.png)
+
+![Image1](plots/myplot025.png)
+
+![Image1](plots/myplot026.png)
+
+After some testing it can also be observed that the amount of hidden layers 
+greatly increases the training time for each epoch, while sometimes barely 
+affecting the accuracy.
+
+In general the time per training epoch for my pc was of 22-23 seconds, around
+3 hours and 12 minutes for a total of 500 epochs, this greatly harms the 
+chances of doing a quick and through analysis of the algorithm without 
+reducing the amount of epochs a lot.
+
+Different learning rates change the rate of learning, but a learning rate too 
+big can sporadically spiral out of control, making the training possibly 
+unstable.
+
+Shuffling the training examples can produce very different learning speeds and
+results for a small number of epochs, meaning that this is possibly a trend 
+for even larger training sessions
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+* [PyCharm](https://www.jetbrains.com/pycharm/) - IDE used for Python
+* [git](https://git-scm.com/) - Version Control system
+* [NumPy](http://www.numpy.org/) - Scientific numeric computation package
+* [MatPlotLib](https://matplotlib.org/) - Plotting package
+* [tqdm](https://github.com/tqdm/tqdm) - Loading bar printer and manager
+* [README.md Template](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2) - Template for good practices when writing a README
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+I used [GitHub](http://github.com/) for versioning.
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+* **Diego Ortego** - *All Package Implementations* - [Gedoix](https://github.com/Gedoix)
 
 ## Acknowledgments
 
 * Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* Universidad de Chile's CC5114 course
