@@ -1,4 +1,4 @@
-from basic_perceptrons.basic_perceptrons import *
+from src.basic_perceptrons.basic_perceptrons import *
 
 
 class BasicNetwork:

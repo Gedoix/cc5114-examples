@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from basic_perceptrons.basic_perceptrons import NAND
+from src.basic_perceptrons.basic_perceptrons import NAND
 
 
 class TestNAND(TestCase):

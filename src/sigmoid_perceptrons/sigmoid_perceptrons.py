@@ -5,8 +5,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from basic_perceptrons.basic_perceptrons import Perceptron
-from learning_perceptrons.basic_classifier import LinearClassifier
+from src.basic_perceptrons.basic_perceptrons import Perceptron
+from src.learning_perceptrons.basic_classifier import LinearClassifier
 
 
 class SigmoidPerceptron(Perceptron):

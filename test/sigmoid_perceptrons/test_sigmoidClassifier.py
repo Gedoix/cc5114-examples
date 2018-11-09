@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from sigmoid_perceptrons.sigmoid_perceptrons import SigmoidClassifier
+from src.sigmoid_perceptrons.sigmoid_perceptrons import SigmoidClassifier
 
 
 class TestSigmoidClassifier(TestCase):

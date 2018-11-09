@@ -23,6 +23,26 @@ class Perceptron:
         self.__last_feed = None
         self.__delta = None
 
+    def custom(self, weights: np.ndarray, bias: float) -> 'Perceptron':
+        self.set_values(weights=weights, bias=bias)
+        return self
+
+    def set_values(self, weights: np.ndarray, bias: float) -> None:
+        assert len(self.__weights) == len(weights)
+        self.__weights = weights
+        self.__bias = bias
+
+    def get_values(self) -> (np.ndarray, float):
+        """
+        Getter of internal values
+        For testing purposes
+        :return:    Internal values of the perceptron
+        """
+        return self.__weights, self.__bias
+
+    def get_delta(self) -> float:
+        return self.__delta
+
     def forward_propagate(self, inputs: np.ndarray) -> float:
         """
         Produces an output from the perceptron's values
@@ -35,9 +55,9 @@ class Perceptron:
 
         # Sigmoid function is calculated
         self.__last_feed = math.exp(-np.logaddexp(0.0,
-                                                  -np.dot(inputs,
-                                                          self.__weights) +
-                                                  self.__bias))
+                                                  -(np.dot(inputs,
+                                                           self.__weights) +
+                                                    self.__bias)))
         return self.__last_feed
 
     def back_propagate_output_layer(self, error: float) -> None:

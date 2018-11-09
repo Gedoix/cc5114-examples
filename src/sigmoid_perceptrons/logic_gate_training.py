@@ -2,7 +2,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from learning_perceptrons.basic_classifier import LinearClassifier
+from src.learning_perceptrons.basic_classifier import LinearClassifier
 from src.sigmoid_perceptrons.sigmoid_perceptrons import SigmoidClassifier
 
 

@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from basic_perceptrons.basic_networks import BitAdder, np
+from src.basic_perceptrons.basic_networks import BitAdder, np
 
 
 class TestBitAdder(TestCase):

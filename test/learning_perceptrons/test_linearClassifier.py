@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from learning_perceptrons.basic_classifier import LinearClassifier
+from src.learning_perceptrons.basic_classifier import LinearClassifier
 
 
 class TestLinearClassifier(TestCase):

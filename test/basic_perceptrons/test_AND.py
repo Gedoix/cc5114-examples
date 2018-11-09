@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from basic_perceptrons.basic_perceptrons import AND
+from src.basic_perceptrons.basic_perceptrons import AND
 
 
 class TestAND(TestCase):

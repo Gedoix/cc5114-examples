@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from basic_perceptrons.basic_networks import BasicNetwork, Perceptron, np
+from src.basic_perceptrons.basic_networks import BasicNetwork, Perceptron, np
 
 
 class TestNetwork(TestCase):
