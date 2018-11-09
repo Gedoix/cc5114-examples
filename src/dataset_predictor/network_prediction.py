@@ -75,7 +75,7 @@ def data_partitioner(attributes: np.ndarray, classes: np.ndarray, proportion: fl
     testing_classes = classes[:, range(int(length * (1.0 - proportion)), length)]
 
     return np.array(training_attributes), np.array(testing_attributes), \
-           np.array(training_classes), np.array(testing_classes)
+        np.array(training_classes), np.array(testing_classes)
 
 
 def main(epochs: int = 200, seed: int = None, disable_bar: bool = False):
@@ -85,7 +85,8 @@ def main(epochs: int = 200, seed: int = None, disable_bar: bool = False):
 
     network = Network(len(train_inputs[:, 0]), [18, 20, 22, 24], 26)
 
-    metrics = {"Accuracy": [], "Precision": [], "Recall": [], "Specificity": [], "Mean error": [], "Mean squared error": []}
+    metrics = {"Accuracy": [], "Precision": [], "Recall": [], "Specificity": [], "Mean error": [],
+               "Mean squared error": []}
 
     print("Initial prediction capacity")
 
@@ -112,9 +113,10 @@ def main(epochs: int = 200, seed: int = None, disable_bar: bool = False):
     for key in metrics.keys():
 
         fig, ax = plt.subplots()
-        ax.plot(range(epochs + 1), metrics.get(key))
+        ax.plot(range(epochs + 1), metrics.get(key), 'o')
         ax.set_xlim([0, epochs])
-        ax.set_ylim([0, 100])
+        if key not in ["Mean error", "Mean squared error"]:
+            ax.set_ylim([0, 100])
 
         plt.title(key + " of classifier v/s epochs trained for a total of " + str(epochs) + " training epochs")
         ax.grid(True)
