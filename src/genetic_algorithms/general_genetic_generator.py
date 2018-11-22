@@ -3,7 +3,7 @@ import random
 import matplotlib.pyplot as plt
 
 
-class GeneticWordGuesser:
+class GeneticGuesser:
 
     def __init__(self, gene_amount: int, word_length: int, alphabet: list,
                  seed: int = None, survivors_amount: int = 0):
@@ -116,8 +116,8 @@ def main(word_length: int = 5, alphabet=None, seed: int = 1234567):
     iterations = 0
     max_fitness_scores = []
 
-    guesser = GeneticWordGuesser(word_length*3, word_length, alphabet,
-                                 seed=seed, survivors_amount=5)
+    guesser = GeneticGuesser(word_length * 3, word_length, alphabet,
+                             seed=seed, survivors_amount=5)
 
     a_random = random.Random()
     a_random.seed(seed+1)
@@ -129,7 +129,6 @@ def main(word_length: int = 5, alphabet=None, seed: int = 1234567):
     guesser.set_evaluation_function(lambda gene: word_comparator(gene, word))
 
     while not guesser.generational_step():
-        print(guesser.get_max_fitness())
         max_fitness_scores.append(guesser.get_max_fitness())
         iterations += 1
     max_fitness_scores.append(guesser.get_max_fitness())
@@ -141,7 +140,7 @@ def main(word_length: int = 5, alphabet=None, seed: int = 1234567):
     ax.set_xlim([0, iterations])
     ax.set_ylim([0, word_length])
 
-    plt.title("Maximum Fitness of each generation for a genetic guesser of a word of length"+str(word_length))
+    plt.title("Fitness of each generation for a genetic guesser of length "+str(word_length))
     ax.grid(True)
     plt.show()
 

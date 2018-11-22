@@ -83,7 +83,7 @@ def main(epochs: int = 500, seed: int = None, disable_bar: bool = False):
     attributes = data_normalizer(attributes, disable_bar=disable_bar)
     train_inputs, test_inputs, train_outputs, test_outputs = data_partitioner(attributes, classes, 0.1, seed=seed)
 
-    network = Network(len(train_inputs[:, 0]), [18, 20, 22, 24], 26)
+    network = Network(len(train_inputs[:, 0]), [18, 20, 22, 24], 26, learning_rate=1.1)
 
     metrics = {"Accuracy": [], "Precision": [], "Recall": [], "Specificity": [], "Mean error": [],
                "Mean squared error": []}
@@ -124,4 +124,4 @@ def main(epochs: int = 500, seed: int = None, disable_bar: bool = False):
 
 
 if __name__ == '__main__':
-    main(seed=1907572537)
+    main(epochs=1000, seed=1907572537)
