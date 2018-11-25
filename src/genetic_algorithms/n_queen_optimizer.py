@@ -39,7 +39,6 @@ def print_queens(queens: list, board_size: int) -> None:
                 text += "|@|"
         text += "\n"
     print(text)
-    print("Queens is "+str(queens_2))
 
 
 def main(board_size: int = 29, max_iterations_per_size: int = 10000):
