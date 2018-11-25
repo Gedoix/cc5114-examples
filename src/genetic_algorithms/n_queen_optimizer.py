@@ -42,7 +42,7 @@ def print_queens(queens: list, board_size: int) -> None:
     print("Queens is "+str(queens_2))
 
 
-def main(board_size: int = 29, max_iterations_per_size: int = 1000):
+def main(board_size: int = 29, max_iterations_per_size: int = 10000):
 
     greatest = 1
 
@@ -68,9 +68,9 @@ def main(board_size: int = 29, max_iterations_per_size: int = 1000):
         max_fitness_scores.append(guesser.get_max_fitness())
         iterations += 1
 
-        state = "success" if (iterations != max_iterations_per_size-1) else "failure"
-        print("Max fitness achieved of "+str(guesser.get_max_fitness())+"/"+str(sum(range(2*queen_amount)))
-              + " this was a "+state)
+        state = "success" if (iterations != max_iterations_per_size) else "failure"
+        print("Max fitness achieved was "+str(guesser.get_max_fitness())+"/"+str(sum(range(2*queen_amount)))
+              + "\n for " + str(iterations) + " genetic iterations, \nthis was a "+state)
 
         _, ax = plt.subplots()
 
@@ -82,9 +82,9 @@ def main(board_size: int = 29, max_iterations_per_size: int = 1000):
         ax.grid(True)
         plt.show()
 
-        if iterations != max_iterations_per_size-1:
+        if iterations != max_iterations_per_size:
             greatest = queen_amount
-            queens = guesser.get+_best_word()
+            queens = guesser.get_best_word()
             break
 
     print("\nThe maximum amount of queens that can \n fit a"
