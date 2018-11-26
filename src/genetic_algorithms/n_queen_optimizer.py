@@ -1,3 +1,8 @@
+import os
+import stat
+import shutil
+import time
+
 import matplotlib.pyplot as plt
 
 from genetic_algorithms.general_genetic_generator import GeneticGuesser
@@ -18,7 +23,7 @@ def fitness_evaluator(queens_configuration: list) -> int:
 
 
 def print_queens(queens: list, board_size: int) -> None:
-    text = "\nThe Board is:\n"
+    text = "\n"
     queens_2 = queens
     for i in range(board_size):
         for j in range(board_size):
@@ -41,19 +46,70 @@ def print_queens(queens: list, board_size: int) -> None:
     print(text)
 
 
-def main(board_size: int = 29, max_iterations_per_size: int = 10000):
+# http://stackoverflow.com/questions/1889597/deleting-directory-in-python
+def _remove_readonly(fn, path_, excinfo):
+    # Handle read-only files and directories
+    if fn is os.rmdir:
+        os.chmod(path_, stat.S_IWRITE)
+        os.rmdir(path_)
+    elif fn is os.remove:
+        os.lchmod(path_, stat.S_IWRITE)
+        os.remove(path_)
 
-    greatest = 1
 
-    queens = []
+def force_remove_file_or_symlink(path_):
+    try:
+        os.remove(path_)
+    except OSError:
+        os.lchmod(path_, stat.S_IWRITE)
+        os.remove(path_)
 
-    for queen_amount in range(int(board_size)-1):
 
-        queen_amount = board_size-queen_amount
+# Code from shutil.rmtree()
+def is_regular_dir(path_):
+    try:
+        mode = os.lstat(path_).st_mode
+    except os.error:
+        mode = 0
+    return stat.S_ISDIR(mode)
+
+
+def clear_dir(path_):
+    if is_regular_dir(path_):
+        # Given path is a directory, clear its content
+        for name in os.listdir(path_):
+            full_path = os.path.join(path_, name)
+            if is_regular_dir(full_path):
+                shutil.rmtree(full_path, onerror=_remove_readonly)
+            else:
+                force_remove_file_or_symlink(full_path)
+    else:
+        # Given path is a file or a symlink.
+        # Raise an exception here to avoid accidentally clearing the content
+        # of a symbolic linked directory.
+        raise OSError("Cannot call clear_dir() on a symbolic link")
+
+
+def main(board_size: int = 4, survivors_percentage: int = 25, mutation_change_percentage: float = 2.0,
+         seed: int = None, save_figures: bool = True):
+
+    queen_amount = board_size
+
+    max_iterations_per_try = (board_size**2)*3+100
+
+    attempt_counter = 1
+
+    save_directory = './../../plots/n_queen'
+
+    time.sleep(1.0)
+
+    while True:
+        print("\nAttempt number "+str(attempt_counter))
 
         guesser = GeneticGuesser(100, 2 * queen_amount,
                                  alphabet=list(range(board_size)),
-                                 seed=1234567, survivors_amount=5)
+                                 seed=seed, survivors_percentage=survivors_percentage,
+                                 mutation_chance_percentage=mutation_change_percentage)
 
         guesser.set_evaluation_function(fitness_evaluator)
         guesser.set_max_possible_fitness(sum(range(2*queen_amount)))
@@ -61,36 +117,60 @@ def main(board_size: int = 29, max_iterations_per_size: int = 10000):
         iterations = 0
         max_fitness_scores = []
 
-        while not (guesser.generational_step() or iterations == max_iterations_per_size-1):
+        while not (guesser.generational_step() or iterations == max_iterations_per_try-1):
             max_fitness_scores.append(guesser.get_max_fitness())
             iterations += 1
         max_fitness_scores.append(guesser.get_max_fitness())
         iterations += 1
 
-        state = "success" if (iterations != max_iterations_per_size) else "failure"
-        print("Max fitness achieved was "+str(guesser.get_max_fitness())+"/"+str(sum(range(2*queen_amount)))
-              + "\n for " + str(iterations) + " genetic iterations, \nthis was a "+state)
+        state = "success" if (iterations != max_iterations_per_try) else "failure"
+        print("\n    Max fitness achieved by attempt " + str(attempt_counter) +
+              " was "+str(guesser.get_max_fitness())+"/"+str(sum(range(2*queen_amount)))
+              + "\n    after " + str(iterations) + " genetic iterations, \n    this was a "+state)
 
         _, ax = plt.subplots()
 
-        ax.plot(range(iterations), max_fitness_scores, 'o')
+        ax.plot(range(iterations), max_fitness_scores)
         ax.set_xlim([0, iterations])
-        ax.set_ylim([0, sum(range(2*queen_amount))])
+        max_possible_score = sum(range(2*queen_amount))
+        ax.set_ylim([max(min(min(max_fitness_scores),  max_possible_score-100), 0), max_possible_score])
 
-        plt.title("Fitness of each generation for queen amount "+str(queen_amount)+" of "+str(int(board_size)))
+        plt.title("Generational fitness for board size "+str(board_size) +
+                  " during attempt " + str(attempt_counter))
+        plt.xlabel("Number of Iterations")
+        plt.ylabel("Fitness")
         ax.grid(True)
-        plt.show()
 
-        if iterations != max_iterations_per_size:
-            greatest = queen_amount
+        if save_figures:
+            plt.savefig(save_directory+"/plot_board"+str(board_size)+"_attempt"+str(attempt_counter)+".png",
+                        bbox_inches='tight')
+        else:
+
+            plt.show()
+
+        plt.close()
+
+        if iterations != max_iterations_per_try:
             queens = guesser.get_best_word()
             break
 
-    print("\nThe maximum amount of queens that can \n fit a"
-          " "+str(board_size)+" times "+str(board_size)+" board \n was found to be "+str(greatest))
+        if seed is not None:
+            seed += 1
+
+        attempt_counter += 1
+
+    print("\nA solution to the N-Queens problem in a " + str(board_size)+" times "+str(board_size) +
+          " \nboard was found after " + str(attempt_counter) + " attempts")
+
+    print("\nThe total amount of genetic iterations was "+str(attempt_counter*max_iterations_per_try+iterations))
 
     print_queens(queens, board_size)
 
 
 if __name__ == '__main__':
-    main()
+
+    clear_dir('./../../plots/n_queen')
+
+    for board in range(46):
+        board += 4
+        main(board_size=board, seed=123456789)

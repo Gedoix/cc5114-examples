@@ -6,13 +6,14 @@ import matplotlib.pyplot as plt
 class GeneticGuesser:
 
     def __init__(self, gene_amount: int, word_length: int, alphabet: list,
-                 seed: int = None, survivors_amount: int = 0):
+                 seed: int = None, survivors_percentage: float = 25, mutation_chance_percentage: float = 1):
         self.__gene_amount = gene_amount
         self.__gene_length = word_length
         self.__alphabet = alphabet
         self.__genes = []
         self.__fitness_scores = []
-        self.__survivors_amount = survivors_amount
+        self.__survivors_percentage = survivors_percentage
+        self.__mutation_chance_percentage = mutation_chance_percentage
 
         self.__evaluator_function = self.__null_evaluation_function
         self.__max_fitness = self.__gene_length
@@ -59,7 +60,7 @@ class GeneticGuesser:
         return self.__genes[self.__fitness_scores.index(self.get_max_fitness())]
 
     def __select(self) -> None:
-        for i in range(len(self.__genes)-self.__survivors_amount):
+        for i in range(int(len(self.__genes)*(1.0-self.__survivors_percentage/100.0))):
             index = self.__fitness_scores.index(min(self.__fitness_scores))
             self.__genes.pop(index)
             self.__fitness_scores.pop(index)
@@ -77,7 +78,7 @@ class GeneticGuesser:
                 index_2 = 0 if index_1 == 1 else 1
             gene = []
             for j in range(self.__gene_length):
-                r = self.__random.randint(1, 101)
+                r = self.__random.uniform(0.0, 100.0+self.__mutation_chance_percentage)
                 if r <= 50:
                     gene.append(self.__genes[index_1][j])
                 elif r <= 100:
@@ -117,7 +118,7 @@ def main(word_length: int = 5, alphabet=None, seed: int = 1234567):
     max_fitness_scores = []
 
     guesser = GeneticGuesser(word_length * 3, word_length, alphabet,
-                             seed=seed, survivors_amount=5)
+                             seed=seed, survivors_percentage=25, mutation_chance_percentage=5)
 
     a_random = random.Random()
     a_random.seed(seed+1)
