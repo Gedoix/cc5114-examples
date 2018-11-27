@@ -107,12 +107,12 @@ def main(board_size: int = 4, survivors_percentage: int = 25, mutation_change_pe
         print("\nAttempt number "+str(attempt_counter))
 
         guesser = GeneticGuesser(100, 2 * queen_amount,
-                                 alphabet=list(range(board_size)),
+                                 gene_alphabet=list(range(board_size)),
                                  seed=seed, survivors_percentage=survivors_percentage,
                                  mutation_chance_percentage=mutation_change_percentage)
 
-        guesser.set_evaluation_function(fitness_evaluator)
-        guesser.set_max_possible_fitness(sum(range(2*queen_amount)))
+        guesser.change_evaluation_function(fitness_evaluator)
+        guesser.change_max_possible_fitness(sum(range(2 * queen_amount)))
 
         iterations = 0
         max_fitness_scores = []
@@ -151,7 +151,7 @@ def main(board_size: int = 4, survivors_percentage: int = 25, mutation_change_pe
         plt.close()
 
         if iterations != max_iterations_per_try:
-            queens = guesser.get_best_word()
+            queens = guesser.get_best_individual()
             break
 
         if seed is not None:
