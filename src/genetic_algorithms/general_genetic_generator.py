@@ -46,7 +46,7 @@ class GeneticGuesser:
         pass
 
     @staticmethod
-    def builder():
+    def builder() -> 'GeneticGuesser.Builder':
         return GeneticGuesser.Builder()
 
     def change_evaluation_function(self, fn) -> None:
@@ -137,39 +137,39 @@ class GeneticGuesser:
             self.__seed = None
             return
 
-        def with_individuals(self, amount: int):
+        def with_individuals(self, amount: int) -> 'GeneticGuesser.Builder':
             self.__individuals_amount = amount
             return self
 
-        def with_genes_amount(self, amount_per_individual: int):
+        def with_genes_amount(self, amount_per_individual: int) -> 'GeneticGuesser.Builder':
             self.__genes_per_individual = amount_per_individual
             return self
 
-        def with_alphabet(self, alphabet: list):
+        def with_alphabet(self, alphabet: list) -> 'GeneticGuesser.Builder':
             self.__gene_alphabet = alphabet
             return self
 
-        def with_evaluating_function(self, func):
+        def with_evaluating_function(self, func) -> 'GeneticGuesser.Builder':
             self.__evaluating_function = func
             return self
 
-        def with_max_fitness(self, fitness: int):
+        def with_max_fitness(self, fitness: int) -> 'GeneticGuesser.Builder':
             self.__max_fitness = fitness
             return self
 
-        def with_survivors(self, percentage: float):
+        def with_survivors(self, percentage: float) -> 'GeneticGuesser.Builder':
             self.__survivors_percentage = percentage
             return self
 
-        def with_mutation_chance(self, percentage: float):
+        def with_mutation_chance(self, percentage: float) -> 'GeneticGuesser.Builder':
             self.__mutation_chance_percentage = percentage
             return self
 
-        def with_seed(self, seed: int):
+        def with_seed(self, seed: int) -> 'GeneticGuesser.Builder':
             self.__seed = seed
             return self
 
-        def build(self):
+        def build(self) -> 'GeneticGuesser':
             if (self.__individuals_amount is not None) and (
                     self.__genes_per_individual is not None) and (
                     self.__gene_alphabet is not None):
@@ -181,7 +181,9 @@ class GeneticGuesser:
                                       self.__survivors_percentage,
                                       self.__mutation_chance_percentage,
                                       self.__seed)
-            return None
+            attributes = []
+            error_message = ""
+            raise AttributeError("")
 
 
 def word_comparator(word_1: list, word_2: list) -> int:
