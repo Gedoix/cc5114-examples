@@ -181,9 +181,15 @@ class GeneticGuesser:
                                       self.__survivors_percentage,
                                       self.__mutation_chance_percentage,
                                       self.__seed)
-            attributes = []
+
             error_message = ""
-            raise AttributeError("")
+            if self.__individuals_amount is None:
+                error_message += "Amount of Individuals was not specified\n"
+            if self.__genes_per_individual is None:
+                error_message += "Amount of Genes per Individual was not specified\n"
+            if self.__gene_alphabet is None:
+                error_message += "Evaluator Function for Individuals was not specified\n"
+            raise AttributeError(error_message+"GeneticGuesser Build Failed")
 
 
 def word_comparator(word_1: list, word_2: list) -> int:
