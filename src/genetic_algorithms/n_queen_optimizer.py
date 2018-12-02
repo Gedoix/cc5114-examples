@@ -6,7 +6,7 @@ from matplotlib.table import Table
 from genetic_algorithms.general_genetic_generator import GeneticGuesser
 
 
-def fitness_evaluator(queens_configuration: list) -> int:
+def fitness_evaluation(queens_configuration: list) -> int:
     fitness = sum(range(len(queens_configuration)))
     for i in range(int(len(queens_configuration) / 2)):
         x = queens_configuration[2 * i]
@@ -120,7 +120,7 @@ def main(board_size: int = 4, survivors_percentage: int = 25, mutation_change_pe
             .with_individuals(100) \
             .with_genes_amount(2 * queen_amount) \
             .with_alphabet(list(range(board_size))) \
-            .with_evaluating_function(lambda gene: fitness_evaluator(gene)) \
+            .with_evaluation_function(lambda gene: fitness_evaluation(gene)) \
             .with_max_fitness(sum(range(2 * queen_amount))) \
             .with_survivors(survivors_percentage) \
             .with_mutation_chance(mutation_change_percentage) \
