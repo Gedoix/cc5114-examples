@@ -650,7 +650,7 @@ if __name__ == '__main__':
     #   ------  Finding Feature Comparison  ------
     """
     Deprecated test for seeing the effects of all of these parameters at once
-    
+
     Simply takes too long to execute
     """
 
@@ -688,7 +688,7 @@ if __name__ == '__main__':
 
     #   ------  Testing English Alphabet  ------
     """
-    Test for seeing the amount of iterations needed to guess a word using the full english alphabet, 
+    Test for seeing the amount of iterations needed to guess a word using the full english alphabet,
     for different word lengths
     """
 
@@ -699,7 +699,7 @@ if __name__ == '__main__':
     diffs = []
     iterations = []
 
-    for diff in range(int(points*0.7)):
+    for diff in range(int(points*0.8)):
         p = (float(diff) + 1) / points
         diffs.append(0 + int(100 * p))
         iterations.append(main(diffs[diff], english_alphabet, 3 * diffs[diff], 25.0, 5.0, seed=s,
