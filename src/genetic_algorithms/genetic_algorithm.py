@@ -263,15 +263,15 @@ class GeneticGuesser:
             self.__gene_alphabet = alphabet
             return self
 
-        def with_evaluation_function(self, func) -> 'GeneticGuesser.Builder':
+        def with_evaluation_function(self, new_function) -> 'GeneticGuesser.Builder':
             """
             Optional parameter setter
 
-            :param func: Function that evaluates a list of genes and returns it's fitness, where a bigger
+            :param new_function: Function that evaluates a list of genes and returns it's fitness, where a bigger
             positive integer is better
             :return: The current Builder instance
             """
-            self.__evaluating_function = func
+            self.__evaluating_function = new_function
             return self
 
         def with_max_fitness(self, fitness: int) -> 'GeneticGuesser.Builder':
@@ -493,8 +493,8 @@ def main(word_length: int, alphabet: list, individuals_amount: int, survivors_pe
     # The plot is either saved or shown
     if save_directory is not None:
         plt.savefig(save_directory + "/plot_word" + str(word_length) + "_individuals" +
-                    str(individuals_amount) + "_survivors" + str(survivors_percentage) + "_mutation" +
-                    str(mutation_chance_percentage) + ".png", bbox_inches='tight')
+                    str(individuals_amount) + "_survivors" + str(int(survivors_percentage)) + "_mutation" +
+                    str(int(100*mutation_chance_percentage)) + ".png", bbox_inches='tight')
     else:
         plt.show()
 
@@ -699,7 +699,7 @@ if __name__ == '__main__':
     diffs = []
     iterations = []
 
-    for diff in range(points):
+    for diff in range(int(points*0.7)):
         p = (float(diff) + 1) / points
         diffs.append(0 + int(100 * p))
         iterations.append(main(diffs[diff], english_alphabet, 3 * diffs[diff], 25.0, 5.0, seed=s,

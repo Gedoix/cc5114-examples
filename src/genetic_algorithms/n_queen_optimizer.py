@@ -3,7 +3,7 @@ from file_utilities import dir_management as dm
 import matplotlib.pyplot as plt
 from matplotlib.table import Table
 
-from genetic_algorithms.general_genetic_generator import GeneticGuesser
+from genetic_algorithms.genetic_algorithm import GeneticGuesser
 
 
 def fitness_evaluation(queens_configuration: list) -> int:
@@ -27,6 +27,7 @@ def fitness_evaluation(queens_configuration: list) -> int:
     :param queens_configuration: A list of length 2*<the amount of queens>, with their coordinates
     :return: The fitness of the configuration
     """
+
     # Ideal value
     fitness = sum(range(len(queens_configuration)))
     for i in range(int(len(queens_configuration) / 2)):
