@@ -9,7 +9,7 @@ Copy hosted over at my [Github](https://github.com/Gedoix/cc5114-examples.git) p
 Packages are described here in the order they were developed, and explaining 
 what they do
 
-## Description of the Packages
+## Description of the Packages in the `src` Directory
 ---
 
 ### `basic_perceptrons`
@@ -92,7 +92,7 @@ which deletes all files inside the directory specified by `path_`
 This function is useful when reseting saved files inside of the `plots`
 directory.
 
-### genetic_algorithms
+### `genetic_algorithms`
 
 This package contains an implementation of a genetic guessing algorithm, in
 the file `genetic_algorithm.py`.
@@ -108,6 +108,45 @@ Both of these files are executable.
 
 Executing the first file 
 
+## Description of other Non-Source Files
+---
+
+### The `venv` Directory
+
+Contains the Python 3.6 virtual environment of the project.
+
+Pycharm can manage it, there's really no reason to look into it.
+
+### The `test` Directory
+
+Houses Unit tests for some classes from `src`.
+
+These files can be executed with instructions below.
+
+### The `resources` Directory
+
+Contains a downloaded copy of 
+[this](https://archive.ics.uci.edu/ml/datasets/Letter+Recognition) 
+dataset, analyzed when testing the `dataset_predictor` package.
+
+### The `plots` Directory
+
+Contains `.png` saves of plots generated from executable files in `src` and some 
+`.pdf` files with execution prints.
+
+### `PDF` Documents
+
+The files:
+
+* `Homework_1_Neural_Networks.pdf` [here](./Homework_1_Neural_Networks.pdf)
+
+* `Homework_2_Neural_Networks.pdf` [here](./Homework_2_Neural_Networks.pdf)
+
+* `Homework_3_Neural_Networks.pdf` [here](./Homework_3_Neural_Networks.pdf)
+
+Contain further documentation and analysis on the plts and experiments 
+implemented in the project.
+
 ## Getting Started
 ---
 
@@ -116,7 +155,7 @@ local machine for development and testing purposes.
 
 ### Prerequisites
 
-This repo's project was and is being developed using [Python 3.7](https://www.python.org/downloads/), together 
+This repo's project was and is being developed using [Python 36](https://www.python.org/downloads/), together 
 with the packages [numpy](http://www.numpy.org/), 
 [matplotlib](https://matplotlib.org/) and [tqdm](https://github.com/tqdm/tqdm).
 
@@ -141,22 +180,23 @@ Pycharm Community Edition or the Professional Edition, either one is useful
 allow Jetbrain's tools to recognize it's presence automatically, and 
 facilitate project version control
 
-* Cloning the repository from [my Github page (Collaborators only)](https://github.com/Gedoix/cc5114-examples.git)
+* Cloning the repository from my 
+[Github](https://github.com/Gedoix/cc5114-examples.git) page (Collaborators only)
 using the IDE's facilitation tools for Version Control Importing. Make sure to
 specify that the project was developed in PyCharm and not any other IDE through
 the import's UI
 
-* Once the repo has been cloned, installing Python 3.7 is easy following [this](http://unix.stackexchange.com/questions/110014/ddg#110163) 
+* Once the repo has been cloned, installing Python 3.6 is easy following 
+[this](http://unix.stackexchange.com/questions/110014/ddg#110163) 
 tutorial
 
 * After all the already mentioned is installed, the project needs to be opened,
- so PyCharm can configure the interpreter to Python 3.7
+ so PyCharm can configure the interpreter to Python 3.6
  
 * Accessing the project settings inside the toolbar, going into the 
 `interpreter` tab, and clicking on the plus `add package` button will allow to 
-easily install [numpy](http://www.numpy.org/), 
-[matplotlib](https://matplotlib.org/) and [tqdm](https://github.com/tqdm/tqdm),
-just by searching them by name.
+easily install [numpy](http://www.numpy.org/),[matplotlib](https://matplotlib.org/) 
+and [tqdm](https://github.com/tqdm/tqdm), just by searching them by name.
 
 * After this the projects imports should all be working. Time to test it out!
 
@@ -173,77 +213,26 @@ tests all that's needed is to right-click the Python executable files
 containing them and click `Run 'file_to_execute.py'`. The files that can be 
 run are:
 
-* `learning_perceptrons.basic_classifier.py`
+* `learning_perceptrons.basic_classifier.py` [here](./src/learning_perceptrons/basic_classifier.py)
 
-* `sigmoid_perceptrons.sigmoid_perceptrons.py`
+* `sigmoid_perceptrons.sigmoid_perceptrons.py` [here](./src/sigmoid_perceptrons/sigmoid_perceptrons.py)
 
-* `sigmoid_perceptrons.logic_gate_training.py`
+* `sigmoid_perceptrons.logic_gate_training.py` [here](./src/sigmoid_perceptrons/logic_gate_training.py)
 
-* `sigmoid_networks.network.py`
+* `sigmoid_networks.network.py` [here](./src/sigmoid_networks/network.py)
 
-* `dataset_predictor.network_prediction.py`
+* `dataset_predictor.network_prediction.py` [here](./src/dataset_predictor/network_prediction.py)
+
+* `genetic_algorithms.genetic_algorithm.py` [here](./src/genetic_algorithms/genetic_algorithm.py)
+
+* `genetic_algorithm.n_queen_optimizer.py` [here](./src/genetic_algorithm/n_queen_optimizer.py)
 
 All of these files can generate plots and printed proof of the workings
 of the code being tested
 
-## Further Information on `dataset_predictor.network_prediction.py`
-
-The file first loads all data in the dataset `letter-recognition.data`,
-which can be found [here](https://archive.ics.uci.edu/ml/datasets/Letter+Recognition)
-
-This dataset contains a total of 20000 instances each with 16 attributes 
-generated from a set of distorted fonts, these attributes count features of 
-said fonts such as `y-edge mean edge count bottom to top`.
-
-An extra column was added to the data containing the classification of the 
-instance, therefore the letter that the classifier should be able to recognize
-
-It has no missing values, and all attributes except for the classification are
-integers
-
-Before starting the prediction process the classification expected results are
-converted to binary vectors, where the i-th dimension of the vector is a 1 if 
-and only if the instance is classified into the i-th letter of the alphabet
-
-The attributes were also normalized after finding their max and min values
-
-After this a randomized partition of the data is extracted for testing 
-purposes later
-
-Then the classifier network is built with a total of 4 hidden layers and 
-90 perceptrons
-
-The training partition of the data is then used as a training epoch and the 
-network trains for 500 epochs, producing the following outputs:
-
-![Image1](plots/myplot021.png)
-
-![Image1](plots/myplot022.png)
-
-![Image1](plots/myplot023.png)
-
-![Image1](plots/myplot024.png)
-
-![Image1](plots/myplot025.png)
-
-![Image1](plots/myplot026.png)
-
-After some testing it can also be observed that the amount of hidden layers 
-greatly increases the training time for each epoch, while sometimes barely 
-affecting the accuracy.
-
-In general the time per training epoch for my pc was of 22-23 seconds, around
-3 hours and 12 minutes for a total of 500 epochs, this greatly harms the 
-chances of doing a quick and through analysis of the algorithm without 
-reducing the amount of epochs a lot.
-
-Different learning rates change the rate of learning, but a learning rate too 
-big can sporadically spiral out of control, making the training possibly 
-unstable.
-
-Shuffling the training examples can produce very different learning speeds and
-results for a small number of epochs, meaning that this is possibly a trend 
-for even larger training sessions
+The execution of `genetic_algorithms.genetic_algorithm.py` and 
+`genetic_algorithm.n_queen_optimizer.py` in particular saves the 
+generated plots to the `plots` directory, overwriting any previous saves
 
 ## Built With
 
