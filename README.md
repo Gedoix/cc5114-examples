@@ -1,10 +1,10 @@
-# cc5114-examples
+# Neural Networks and Genetic Programming
 ---
 
 Examples of the concepts from the course CC5114: Neural Networks 
 and Genetic Programming
 
-Copy hosted over at [my Github page (Collaborators only)](https://github.com/Gedoix/cc5114-examples.git)
+Copy hosted over at my [Github](https://github.com/Gedoix/cc5114-examples.git) page (Collaborators only)]
 
 Packages are described here in the order they were developed, and explaining 
 what they do
@@ -79,7 +79,34 @@ through the use of 6 different metrics classification metrics.
 
 ### `file_utilities`
 
-This package 
+This package includes the file `dir_management.py` with code from
+[this](http://stackoverflow.com/questions/1889597/deleting-directory-in-python)
+stack overflow answer.
+
+It's a simple package for storing functions that manipulate files and
+directories.
+
+In this case `dir_management.py` contains the function `clear_dir(path_)`
+which deletes all files inside the directory specified by `path_`
+
+This function is useful when reseting saved files inside of the `plots`
+directory.
+
+### genetic_algorithms
+
+This package contains an implementation of a genetic guessing algorithm, in
+the file `genetic_algorithm.py`.
+
+Also, a solver for the [N-Queen Problem](./Homework_2_Neural_Networks.pdf) can
+be found in `n_queen_optimizer.py`.
+
+This last file contains some code from 
+[this](https://stackoverflow.com/a/10195347/10216044) stack overflow answer,
+regarding how to plot a chess board using the matplotlib package.
+
+Both of these files are executable.
+
+Executing the first file 
 
 ## Getting Started
 ---
@@ -159,7 +186,7 @@ run are:
 All of these files can generate plots and printed proof of the workings
 of the code being tested
 
-## Further Information on dataset_predictor.network_prediction.py
+## Further Information on `dataset_predictor.network_prediction.py`
 
 The file first loads all data in the dataset `letter-recognition.data`,
 which can be found [here](https://archive.ics.uci.edu/ml/datasets/Letter+Recognition)
