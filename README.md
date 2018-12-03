@@ -12,7 +12,7 @@ what they do
 ## Description of the Packages
 ---
 
-### basic_perceptrons
+### `basic_perceptrons`
 
 This package contains basic implementations of perceptrons and 
 networks made from them, along with a more specific collection of 
@@ -25,7 +25,7 @@ use outside the package
 `basic_networks.py` contains a basic yet extensible network 
 implementation as well as the addition network
 
-### learning_perceptrons
+### `learning_perceptrons`
 
 This package contains a basic implementation of a learning linear 
 classifier re-using the perceptron implementation from `basic_perceptrons.py`
@@ -36,7 +36,7 @@ auto-trains if necessary
 The file can be executed, in which case it will print example plots that prove 
 that it can learn
 
-### sigmoid_perceptrons
+### `sigmoid_perceptrons`
 
 This package implements sigmoid perceptrons and a classifier that uses them, 
 reusing some code from the two previous packages
@@ -55,7 +55,7 @@ Learning `xor` using a single perceptron is impossible, so the accuracy of
 that simulation in particular can never arrive at 100%, but the other gates 
 can all be learned
 
-### sigmoid_networks
+### `sigmoid_networks`
 
 This package contains an implementation from scratch of an extensible and 
 trainable neural network, using sigmoid perceptrons, to be used for 
@@ -65,7 +65,7 @@ classification problems in large datasets.
 actually learn a simple linear classification problem with many neurons 
 and also what sort of results and consistency to expect from it.
 
-### dataset_predictor
+### `dataset_predictor`
 
 This package contains a single executable file, configured to read a `.csv` 
 like dataset, in this case `letter-recognition.data`, and use the contents of 
@@ -76,6 +76,10 @@ attributes.
 The file, `network_prediction.py`, then produces 6 plots showing the 
 improvement over times trained of the network's classification algorithm 
 through the use of 6 different metrics classification metrics.
+
+### `file_utilities`
+
+This package 
 
 ## Getting Started
 ---
