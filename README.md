@@ -97,7 +97,7 @@ directory.
 This package contains an implementation of a genetic guessing algorithm, in
 the file `genetic_algorithm.py`.
 
-Also, a solver for the [N-Queen Problem](./Homework_2_Neural_Networks.pdf) can
+Also, a solver for the [N-Queen Problem](Homework_2_Neural_Networks.pdf) can
 be found in `n_queen_optimizer.py`.
 
 This last file contains some code from 
@@ -138,11 +138,11 @@ Contains `.png` saves of plots generated from executable files in `src` and some
 
 The files:
 
-* `Homework_1_Neural_Networks.pdf` [here](./Homework_1_Neural_Networks.pdf)
+* `Homework_1_Neural_Networks.pdf` [here](Homework_1_Neural_Networks.pdf)
 
-* `Homework_2_Neural_Networks.pdf` [here](./Homework_2_Neural_Networks.pdf)
+* `Homework_2_Neural_Networks.pdf` [here](Homework_2_Neural_Networks.pdf)
 
-* `Homework_3_Neural_Networks.pdf` [here](./Homework_3_Neural_Networks.pdf)
+* `Homework_3_Neural_Networks.pdf` [here](Homework_3_Neural_Networks.pdf)
 
 Contain further documentation and analysis on the plts and experiments 
 implemented in the project.
@@ -213,19 +213,19 @@ tests all that's needed is to right-click the Python executable files
 containing them and click `Run 'file_to_execute.py'`. The files that can be 
 run are:
 
-* `learning_perceptrons.basic_classifier.py` [here](./src/learning_perceptrons/basic_classifier.py)
+* `learning_perceptrons.basic_classifier.py` [here](src/learning_perceptrons/basic_classifier.py)
 
-* `sigmoid_perceptrons.sigmoid_perceptrons.py` [here](./src/sigmoid_perceptrons/sigmoid_perceptrons.py)
+* `sigmoid_perceptrons.sigmoid_perceptrons.py` [here](src/sigmoid_perceptrons/sigmoid_perceptrons.py)
 
-* `sigmoid_perceptrons.logic_gate_training.py` [here](./src/sigmoid_perceptrons/logic_gate_training.py)
+* `sigmoid_perceptrons.logic_gate_training.py` [here](src/sigmoid_perceptrons/logic_gate_training.py)
 
-* `sigmoid_networks.network.py` [here](./src/sigmoid_networks/network.py)
+* `sigmoid_networks.network.py` [here](src/sigmoid_networks/network.py)
 
-* `dataset_predictor.network_prediction.py` [here](./src/dataset_predictor/network_prediction.py)
+* `dataset_predictor.network_prediction.py` [here](src/dataset_predictor/network_prediction.py)
 
-* `genetic_algorithms.genetic_algorithm.py` [here](./src/genetic_algorithms/genetic_algorithm.py)
+* `genetic_algorithms.genetic_algorithm.py` [here](src/genetic_algorithms/genetic_algorithm.py)
 
-* `genetic_algorithm.n_queen_optimizer.py` [here](./src/genetic_algorithm/n_queen_optimizer.py)
+* `genetic_algorithm.n_queen_optimizer.py` [here](src/genetic_algorithms/n_queen_optimizer.py)
 
 All of these files can generate plots and printed proof of the workings
 of the code being tested
