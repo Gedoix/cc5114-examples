@@ -20,8 +20,8 @@ class GeneticSynapse:
 
     # Internal value management
 
-    def set_output(self, result: [bool, float]) -> None:
-        self.__output = self.__weight*float(result)
+    def set_output(self, result: float) -> None:
+        self.__output = self.__weight*result
 
     def get_output(self) -> float:
         if self.__start_neuron.get_calculations() < self.__end_neuron.get_calculations():
@@ -29,6 +29,9 @@ class GeneticSynapse:
         return self.__output
 
     # Availability management
+
+    def enable(self) -> None:
+        self.__availability = True
 
     def disable(self) -> None:
         self.__availability = False

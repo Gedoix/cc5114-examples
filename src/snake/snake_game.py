@@ -2,7 +2,7 @@ import random
 
 import pygame
 
-from typing import List
+from typing import List, Optional
 from typing import Tuple
 
 # Display constants
@@ -26,14 +26,22 @@ EAST = 3
 INFINITY = 2**63 - 1
 
 
-class TestAI:
+class AI:
+
+    def choose(self, distance_wall_left: int, distance_wall_front: int, distance_wall_right: int,
+               distance_tail_left: int, distance_tail_front: int, distance_tail_right: int,
+               distance_fruit_left: int, distance_fruit_front: int, distance_fruit_right: int) -> List[bool]:
+        return [False, True, False]
+
+
+class TestAI(AI):
     """
     Test AI for a snake class, to be used only upon execution of this script (for testing).
     """
 
     def choose(self, distance_wall_left: int, distance_wall_front: int, distance_wall_right: int,
                distance_tail_left: int, distance_tail_front: int, distance_tail_right: int,
-               distance_fruit_left: int, distance_fruit_front: int, distance_fruit_right: int) -> List[int]:
+               distance_fruit_left: int, distance_fruit_front: int, distance_fruit_right: int) -> List[bool]:
         """
         Choice function of the AI agent, asks pygame's input key events to know what to do.
 
@@ -49,26 +57,23 @@ class TestAI:
         :return: Left direction if 'a' or '<-' are pressed, Right direction if 'd' or '->' are pressed, and
         front direction for any other key, or none
         """
+
+        usage = (distance_wall_left + distance_wall_front + distance_wall_right +
+                 distance_tail_left + distance_tail_front + distance_tail_right +
+                 distance_fruit_left + distance_fruit_front + distance_fruit_right)*0.0
+
         # Results vector
-        result = [0, 0, 0]
+        result = [False, False, False] if usage == 0.0 else [False, False, False]
 
-        # Event queue is scanned
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    result[0] = 1
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    result[2] = 1
+        # A choice is asked for
+        choice = input("enter 'a' to turn left or 'd' to turn right, anything else advances forward\n")
 
-        # Events are cleared to avoid "not-responding" reaction from the system
-        pygame.event.clear()
-
-        # If two directions were chosen at the same time, or none, chooses forward
-        if result[0] == result[2]:
-            result[0] = 0
-            result[1] = 1
-            result[2] = 0
+        if choice == 'a':
+            result[0] = True
+        elif choice == 'd':
+            result[2] = True
+        else:
+            result[1] = True
 
         return result
 
@@ -79,8 +84,14 @@ class Snake:
 
     Contains a list of the positions of the cells it occupies, as well as it's own AI and step method.
     """
+    width: int
+    height: int
+    positions: List[Tuple[int, int]]
+    current_direction: int
+    ai: AI
+    living_state: bool
 
-    def __init__(self, cells_width: int, cells_height: int, ai):
+    def __init__(self, cells_width: int, cells_height: int, ai: AI):
         """
         Constructor of the Snake.
 
@@ -168,13 +179,11 @@ class Snake:
                                         distances_to_fruit[left], distances_to_fruit[front], distances_to_fruit[right])
 
         # Direction is updated
-        if next_direction[0] == 1:
+        if next_direction[0]:
             self.current_direction += 1
             if self.current_direction == 4:
                 self.current_direction = NORTH
-        elif next_direction[1] == 1:
-            pass
-        elif next_direction[2] == 1:
+        elif next_direction[2]:
             self.current_direction -= 1
             if self.current_direction == -1:
                 self.current_direction = EAST
@@ -270,6 +279,10 @@ class Game:
 
     Can either simulate multiple games of snake without graphics or show a game for a single snake in a separate window.
     """
+    width: int
+    height: int
+    screen: Optional[pygame.display.__class__]
+    font: Optional[pygame.font.FontType]
 
     def __init__(self, cells_width: int, cells_height: int):
         """
@@ -388,6 +401,8 @@ class Game:
             # The display can be closed
             if pygame.event.peek(pygame.QUIT):
                 break
+            # Events are cleared to avoid "not-responding" reaction from the system
+            pygame.event.clear()
             # A game step is calculated
             snake.step(fruit)
             # If a fruit was eaten, it resets and adds to the score

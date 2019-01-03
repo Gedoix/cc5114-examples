@@ -12,12 +12,6 @@ class GeneticNeuron:
     def __init__(self):
         self.__calculations = 0
 
-    # Object cloning
-
-    def clone(self) -> "GeneticNeuron":
-        new = GeneticNeuron()
-        return new
-
     # Calculations counter
 
     def set_calculations(self, calculations: int) -> None:
@@ -32,6 +26,12 @@ class GeneticNeuron:
         self.__calculations += 1
         pass
 
+    @staticmethod
+    def sigmoid(x: float) -> float:
+        import numpy as np
+        import math
+        return math.exp(-np.logaddexp(0.0, -x))
+
 
 class InputNeuron(GeneticNeuron):
 
@@ -42,11 +42,6 @@ class InputNeuron(GeneticNeuron):
         super().__init__()
         self.__outputs = []
         self.__value = 0.0
-
-    def clone(self) -> "InputNeuron":
-        new = InputNeuron()
-        new.__value = self.__value
-        return new
 
     def set_value(self, value: float) -> None:
         self.__value = value
@@ -64,18 +59,11 @@ class HiddenNeuron(GeneticNeuron):
 
     __outputs: List[GeneticSynapse]
     __inputs: List[GeneticSynapse]
-    __bias: float
 
-    def __init__(self, bias: float):
+    def __init__(self):
         super().__init__()
-        self.__bias = bias
         self.__inputs = []
         self.__outputs = []
-
-    def clone(self) -> "HiddenNeuron":
-        new = HiddenNeuron(self.__bias)
-        new.__bias = self.__bias
-        return new
 
     def add_input(self, synapse: GeneticSynapse) -> None:
         self.__inputs.append(synapse)
@@ -88,12 +76,9 @@ class HiddenNeuron(GeneticNeuron):
         weighted_sum = 0
         for i in self.__inputs:
             weighted_sum += i.get_output()
-        last_result = weighted_sum + self.__bias >= 0
+        last_result = self.sigmoid(weighted_sum)
         for o in self.__outputs:
             o.set_output(last_result)
-
-    def set_bias(self, bias: float) -> None:
-        self.__bias = bias
 
 
 class OutputNeuron(GeneticNeuron):
@@ -106,11 +91,6 @@ class OutputNeuron(GeneticNeuron):
         self.__inputs = []
         self.__result = False
 
-    def clone(self) -> "OutputNeuron":
-        new = OutputNeuron()
-        new.__result = self.__result
-        return new
-
     def add_input(self, synapse: GeneticSynapse) -> None:
         self.__inputs.append(synapse)
 
@@ -119,7 +99,7 @@ class OutputNeuron(GeneticNeuron):
         weighted_sum = 0
         for i in self.__inputs:
             weighted_sum += i.get_output()
-        self.__result = weighted_sum >= 0
+        self.__result = self.sigmoid(weighted_sum) > 0.5
 
     def get_result(self) -> bool:
         return self.__result
