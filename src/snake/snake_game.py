@@ -23,14 +23,23 @@ SOUTH = 2
 EAST = 3
 
 # Biggest integer
-INFINITY = 2**63 - 1
+INFINITY: int = 2**63 - 1
+
+# Log mode
+LOG = {"TestAI": False, "Snake": False, "Game": True}
+
+
+def modified_sigmoid(x: float) -> float:
+    import numpy as np
+    import math
+    return math.exp(-np.logaddexp(0.0, -4.9*float(x)))
 
 
 class AI:
 
-    def choose(self, distance_wall_left: int, distance_wall_front: int, distance_wall_right: int,
-               distance_tail_left: int, distance_tail_front: int, distance_tail_right: int,
-               distance_fruit_left: int, distance_fruit_front: int, distance_fruit_right: int) -> List[bool]:
+    def choose(self, distance_wall_left: float, distance_wall_front: float, distance_wall_right: float,
+               distance_tail_left: float, distance_tail_front: float, distance_tail_right: float,
+               distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float) -> List[bool]:
         return [False, True, False]
 
 
@@ -39,9 +48,9 @@ class TestAI(AI):
     Test AI for a snake class, to be used only upon execution of this script (for testing).
     """
 
-    def choose(self, distance_wall_left: int, distance_wall_front: int, distance_wall_right: int,
-               distance_tail_left: int, distance_tail_front: int, distance_tail_right: int,
-               distance_fruit_left: int, distance_fruit_front: int, distance_fruit_right: int) -> List[bool]:
+    def choose(self, distance_wall_left: float, distance_wall_front: float, distance_wall_right: float,
+               distance_tail_left: float, distance_tail_front: float, distance_tail_right: float,
+               distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float) -> List[bool]:
         """
         Choice function of the AI agent, asks pygame's input key events to know what to do.
 
@@ -66,6 +75,8 @@ class TestAI(AI):
         result = [False, False, False] if usage == 0.0 else [False, False, False]
 
         # A choice is asked for
+        if LOG["TestAI"]:
+            print("[TestAI] Asking for Input")
         choice = input("enter 'a' to turn left or 'd' to turn right, anything else advances forward\n")
 
         if choice == 'a':
@@ -75,6 +86,8 @@ class TestAI(AI):
         else:
             result[1] = True
 
+        if LOG["TestAI"]:
+            print("[TestAI] Giving Result")
         return result
 
 
@@ -101,6 +114,8 @@ class Snake:
         from the Snake's head to the edge of the board, to it's own tail, and to the fruit, in each of the three
         directions left, front and right (respective to the current direction of it's movement)
         """
+        if LOG["Snake"]:
+            print("[Snake] Initializing Snake")
         self.width = cells_width
         self.height = cells_height
         self.positions = []
@@ -127,7 +142,7 @@ class Snake:
 
         # Shortest distances to the snake's tail (one of them is guaranteed to be 1 if the
         # snake's length is more than 1)
-        distances_to_tail = [INFINITY, INFINITY, INFINITY, INFINITY]
+        distances_to_tail: List[int] = [INFINITY, INFINITY, INFINITY, INFINITY]
         for position in self.positions[1:]:
             if position[0] == self.positions[0][0]:
                 if position[1] < self.positions[0][1]:
@@ -174,9 +189,15 @@ class Snake:
             right = 1
 
         # The ai is consulted
-        next_direction = self.ai.choose(distances_to_walls[left], distances_to_walls[front], distances_to_walls[right],
-                                        distances_to_tail[left], distances_to_tail[front], distances_to_tail[right],
-                                        distances_to_fruit[left], distances_to_fruit[front], distances_to_fruit[right])
+        next_direction = self.ai.choose(modified_sigmoid(distances_to_walls[left]),
+                                        modified_sigmoid(distances_to_walls[front]),
+                                        modified_sigmoid(distances_to_walls[right]),
+                                        modified_sigmoid(distances_to_tail[left]),
+                                        modified_sigmoid(distances_to_tail[front]),
+                                        modified_sigmoid(distances_to_tail[right]),
+                                        modified_sigmoid(distances_to_fruit[left]),
+                                        modified_sigmoid(distances_to_fruit[front]),
+                                        modified_sigmoid(distances_to_fruit[right]))
 
         # Direction is updated
         if next_direction[0]:
@@ -291,6 +312,8 @@ class Game:
         :param cells_width: The board's width in cells
         :param cells_height: The board's height in cells
         """
+        if LOG["Game"]:
+            print("[Game] Initializing Game")
         self.width = cells_width
         self.height = cells_height
 
@@ -298,7 +321,44 @@ class Game:
         self.screen = None
         self.font = None
 
-    def simulate(self, snakes: List[Snake], seeds: List[int]) -> (List[Snake], List[int], List[int]):
+        # Pygame initialization
+        if LOG["Game"]:
+            print("[Game] Initializing Pygame")
+        pygame.init()
+        if LOG["Game"]:
+            print("[Game] Initializing Pygame Font")
+        pygame.font.init()
+        if LOG["Game"]:
+            print("[Game] Setting up Font")
+        self.font = pygame.font.SysFont("Consolas", 100)
+
+    @staticmethod
+    def quit():
+        # Pygame is closed
+        if LOG["Game"]:
+            print("[Game] Quitting Pygame Font")
+        pygame.font.quit()
+        if LOG["Game"]:
+            print("[Game] Quitting Pygame")
+        pygame.quit()
+
+    def open_display(self):
+        if LOG["Game"]:
+            print("[Game] Initializing Pygame Display")
+        pygame.display.init()
+        # Pygame display and text generator are created
+        if LOG["Game"]:
+            print("[Game] Setting up Pygame Display")
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption("Snake")
+
+    @staticmethod
+    def close_display():
+        if LOG["Game"]:
+            print("[Game] Quitting Pygame Display")
+        pygame.display.quit()
+
+    def simulate(self, snakes: List[Snake], seed: int) -> (List[Snake], List[int], List[int]):
         """
         Snake game simulator, can run multiple Snake object's games at the same time.
 
@@ -306,10 +366,12 @@ class Game:
         the amount of cycles they took to end the game
 
         :param snakes: List of snakes to simulate
-        :param seeds: Pseudo-random number generator seeds
+        :param seed: Pseudo-random number generator seed, shared among snakes
         :return: A list of the snakes in their final states, a list of their scores and a
         list of how long they lasted in the game
         """
+        if LOG["Game"]:
+            print("[Game] Initializing Simulation")
         # Random number generators
         generators = []
         # Each game's fruits
@@ -320,7 +382,7 @@ class Game:
         times = []
         # Values are initialized
         for i in range(len(snakes)):
-            generators.append(random.Random(seeds[i]))
+            generators.append(random.Random(seed))
 
             fruits.append(self.__generate_fruit(generators[i]))
             while snakes[i].covers(fruits[i]):
@@ -329,6 +391,8 @@ class Game:
             scores.append(0)
             times.append(0)
 
+        if LOG["Game"]:
+            print("[Game] Entering Simulation Loop")
         # Simulation loop, lasts until there's no more snakes alive (capping at 10000 steps per snake)
         any_alive = True
         while any_alive:
@@ -348,11 +412,14 @@ class Game:
                         while snakes[i].covers(fruits[i]):
                             fruits[i] = self.__generate_fruit(generators[i])
                         scores[i] += 1
+                        times[i] = 0
                     # The step counter increases
                     times[i] += 1
                     # Checks if it's time to stop
-                    if times[i] > 10000:
+                    if times[i] > 100:
                         snakes[i].kill()
+        if LOG["Game"]:
+            print("[Game] Quitting Simulation")
         return snakes, scores, times
 
     def show(self, snake: Snake, seed: int, subtitle: str, fps: int = 1) -> None:
@@ -364,18 +431,15 @@ class Game:
         :param subtitle: Subtitle of the window
         :param fps: Steps (frames) per second of the window
         """
-        # Pygame initialization
-        pygame.init()
-        pygame.font.init()
 
-        # Pygame display and text generator are created
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        self.font = pygame.font.SysFont("Consolas", 100)
+        if LOG["Game"]:
+            print("[Game] Initializing Graphic Simulation")
 
-        # The caption is specified
-        pygame.display.set_caption("Snake")
+        self.open_display()
 
         # Step clock
+        if LOG:
+            print("[Game] Setting up Pygame Clock")
         clock = pygame.time.Clock()
 
         # The fruit is generated
@@ -388,6 +452,8 @@ class Game:
         score = 0
 
         # Main loop
+        if LOG:
+            print("[Game] Entering Main Loop")
         while snake.is_alive():
             # A frame is rendered
             self.screen.fill(COLOR_BLACK)
@@ -413,14 +479,17 @@ class Game:
                 score += 1
 
         # End game screen
+        if LOG:
+            print("[Game] Drawing End Screen")
         self.screen.fill(COLOR_RED)
         self.__draw_score(COLOR_BLACK, score)
         pygame.display.update()
         clock.tick(60)
 
-        # Pygame is closed
-        pygame.font.quit()
-        pygame.quit()
+        if LOG["Game"]:
+            print("[Game] Quitting Graphic Simulation")
+
+        self.close_display()
 
     def __generate_fruit(self, generator: random.Random) -> Tuple[int, int]:
         """

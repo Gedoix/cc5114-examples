@@ -32,10 +32,16 @@ class GeneticNeuron:
         pass
 
     @staticmethod
-    def sigmoid(x: float) -> float:
+    def modified_sigmoid(x: float) -> float:
         import numpy as np
         import math
-        return math.exp(-np.logaddexp(0.0, -x))
+        return math.exp(-np.logaddexp(0.0, -4.9*x))
+
+    def add_input(self, synapse: "GeneticSynapse") -> None:
+        pass
+
+    def add_output(self, synapse: "GeneticSynapse") -> None:
+        pass
 
 
 class InputNeuron(GeneticNeuron):
@@ -79,7 +85,7 @@ class HiddenNeuron(GeneticNeuron):
         weighted_sum = 0
         for i in self.__inputs:
             weighted_sum += i.get_output()
-        last_result = self.sigmoid(weighted_sum)
+        last_result = self.modified_sigmoid(weighted_sum)
         for o in self.__outputs:
             o.set_output(last_result)
 
@@ -101,7 +107,7 @@ class OutputNeuron(GeneticNeuron):
         weighted_sum = 0
         for i in self.__inputs:
             weighted_sum += i.get_output()
-        self.__result = self.sigmoid(weighted_sum) > 0.5
+        self.__result = self.modified_sigmoid(weighted_sum) > 0.5
 
     def get_result(self) -> bool:
         return self.__result
@@ -121,6 +127,8 @@ class GeneticSynapse:
         self.__start_neuron = start_neuron
         self.__weight = weight
         self.__end_neuron = end_neuron
+        start_neuron.add_output(self)
+        end_neuron.add_input(self)
         self.__output = 0.0
         self.__availability = True
 
@@ -247,19 +255,27 @@ class Network:
 
     def mutation_change_weights(self) -> None:
         for synapse in self.__synapses:
-            if self.__generator.randint(1, 100) <= 90:
-                perturbation = 1 if self.__generator.randint(1, 100) <= 50 else -1
+            if self.choose_with_probability(90.0):
+                perturbation = 0.1 if self.choose_with_probability(50.0) else -0.1
                 new_weight = synapse.get_weight() + perturbation
             else:
                 new_weight = self.get_random_float()
             synapse.set_weight(new_weight)
 
     def mutation_add_synapse(self) -> None:
-        i = self.__generator.randint(0, len(self.__hidden_neurons) + len(self.__input_neurons) - 1)
-        o = self.__generator.randint(0, len(self.__hidden_neurons) + len(self.__output_neurons) - 1)
+        if len(self.__hidden_neurons) > 1:
+            i = self.__generator.randint(0, len(self.__hidden_neurons) + len(self.__input_neurons) - 1)
+            o = self.__generator.randint(0, len(self.__hidden_neurons) + len(self.__output_neurons) - 1)
 
-        is_input = not i < len(self.__hidden_neurons)
-        is_output = not o < len(self.__hidden_neurons)
+            is_input = not i < len(self.__hidden_neurons)
+            is_output = not o < len(self.__hidden_neurons)
+
+        else:
+            i = self.__generator.randint(0, len(self.__input_neurons) - 1)
+            o = self.__generator.randint(0, len(self.__output_neurons) - 1)
+
+            is_input = True
+            is_output = True
 
         if not (is_input or is_output):
             while i >= o:
@@ -277,7 +293,7 @@ class Network:
         else:
             end_neuron = self.__hidden_neurons[o]
 
-        weight = self.__generator.normalvariate(0, 5)
+        weight = self.get_random_float()
         self.__synapses.append(GeneticSynapse(start_neuron, weight, end_neuron))
         self.__symbolic_synapses.append((i, is_input, o, is_output))
 
@@ -336,14 +352,17 @@ class Network:
 
             if self_symbolic_synapse == other_symbolic_synapse and \
                     self.__synapses[i].is_available() != other.__synapses[i].is_available():
-                if self.__generator.randint(1, 100) <= 75:
+                if self.choose_with_probability(75.0):
                     self.__synapses[i].disable()
                 else:
                     self.__synapses[i].enable()
 
             if self.get_fitness() == other.get_fitness() and self_symbolic_synapse != other_symbolic_synapse:
-                if self.__generator.randint(1, 100) <= 50:
+                if self.choose_with_probability(50.0):
                     index_1, is_input, index_2, is_output = other_symbolic_synapse
+                    if (not is_input and index_1 >= len(self.__hidden_neurons)) or \
+                            (not is_output and index_2 >= len(self.__hidden_neurons)):
+                        continue
                     start_neuron = self.__input_neurons[index_1] if is_input else self.__hidden_neurons[index_1]
                     weight = other.__synapses[i].get_weight()
                     end_neuron = self.__output_neurons[index_2] if is_output else self.__hidden_neurons[index_2]
@@ -353,47 +372,22 @@ class Network:
         if self.get_fitness() == other.get_fitness():
             if self.get_innovation() == min_innovation:
                 for i in range(other.get_innovation()-min_innovation):
-                    # if self.__generator.randint(1, 100) <= 50:
+                    # if self.choose_with_probability(50.0):
                     i += min_innovation
                     index_1, is_input, index_2, is_output = other.__symbolic_synapses[i]
-                    if not is_input and index_1 >= self.get_innovation():
-                        index_1 = self.get_innovation()
+                    if not is_input and index_1 >= len(self.__hidden_neurons):
+                        index_1 = len(self.__hidden_neurons)
                         self.__hidden_neurons.append(HiddenNeuron())
                         if not is_output and index_2 == index_1:
                             index_2 += 1
-                    if not is_output and index_2 >= self.get_innovation():
-                        index_2 = self.get_innovation()
+                    if not is_output and index_2 >= len(self.__hidden_neurons):
+                        index_2 = len(self.__hidden_neurons)
                         self.__hidden_neurons.append(HiddenNeuron())
                     start_neuron = self.__input_neurons[index_1] if is_input else self.__hidden_neurons[index_1]
                     weight = other.__synapses[i].get_weight()
                     end_neuron = self.__output_neurons[index_2] if is_output else self.__hidden_neurons[index_2]
-                    self.__synapses[i] = GeneticSynapse(start_neuron, weight, end_neuron)
-                    self.__symbolic_synapses[i] = (index_1, is_input, index_2, is_output)
-            # else:
-            #     for i in range(self.get_innovation()-min_innovation):
-            #         if self.__generator.randint(1, 100) <= 50:
-            #             i += min_innovation
-            #             index_1, is_input, index_2, is_output = self.__symbolic_synapses[i]
-            #             index_1_found = False
-            #             index_2_found = False
-            #             for j, i1, _, i2, _ in enumerate(self.__symbolic_synapses):
-            #                 if index_1 == i1 and j != i:
-            #                     index_1_found = True
-            #                 if index_2 == i2 and j != i:
-            #                     index_2_found = True
-            #             if not (is_input or index_1_found) or not (is_output or index_2_found):
-            #                 not_found = index_1 if index_2_found else index_2
-            #                 self.__hidden_neurons.pop(not_found)
-            #                 for synapse_index, index_1_2, is_input_2, index_2_2, is_output_2 in enumerate(
-            #                         self.__symbolic_synapses):
-            #                     if index_1_2 >= not_found and not is_input_2:
-            #                         index_1_2 -= 1
-            #                     if index_2_2 >= not_found and not is_output_2:
-            #                         index_2_2 -= 1
-            #                     self.__symbolic_synapses[synapse_index] = (index_1_2, is_input_2,
-            #                                                                index_2_2, is_output_2)
-            #             self.__synapses.pop(i)
-            #             self.__symbolic_synapses.pop(i)
+                    self.__synapses.append(GeneticSynapse(start_neuron, weight, end_neuron))
+                    self.__symbolic_synapses.append((index_1, is_input, index_2, is_output))
 
     @staticmethod
     def compare(n1: "Network", n2: "Network") -> Tuple[float, float, float]:
@@ -431,6 +425,9 @@ class Network:
 
     def set_shared_fitness(self, shared_fitness: float) -> None:
         self.__shared_fitness = shared_fitness
+
+    def choose_with_probability(self, probability_percentage: float) -> bool:
+        return self.__generator.uniform(0, 100) < probability_percentage
 
     def get_random_float(self) -> float:
         return self.__generator.uniform(-2.0, 2.0)
