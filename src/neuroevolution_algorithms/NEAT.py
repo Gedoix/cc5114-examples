@@ -2,7 +2,7 @@ import random
 from random import Random
 from typing import List, Optional, Callable
 
-from neuroevolution_algorithms.network import Network
+from neuroevolution_algorithms.neat_network import Network
 
 
 class Neat:

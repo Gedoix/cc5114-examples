@@ -1,15 +1,171 @@
 import random
 from typing import List, Any, Tuple
 
-from neuroevolution_algorithms.neuron import InputNeuron, HiddenNeuron, OutputNeuron
-from neuroevolution_algorithms.synapse import GeneticSynapse
-
 
 def find(l: List[Any], obj: Any) -> int:
     try:
         return l.index(obj)
     except ValueError:
         return -1
+
+
+class GeneticNeuron:
+    __calculations: int
+
+    # Constructor
+
+    def __init__(self):
+        self.__calculations = 0
+
+    # Calculations counter
+
+    def set_calculations(self, calculations: int) -> None:
+        self.__calculations = calculations
+
+    def get_calculations(self) -> int:
+        return self.__calculations
+
+    # Main behaviour
+
+    def calculate(self) -> None:
+        self.__calculations += 1
+        pass
+
+    @staticmethod
+    def sigmoid(x: float) -> float:
+        import numpy as np
+        import math
+        return math.exp(-np.logaddexp(0.0, -x))
+
+
+class InputNeuron(GeneticNeuron):
+    __value: float
+    __outputs: List["GeneticSynapse"]
+
+    def __init__(self):
+        super().__init__()
+        self.__outputs = []
+        self.__value = 0.0
+
+    def set_value(self, value: float) -> None:
+        self.__value = value
+
+    def add_output(self, synapse: "GeneticSynapse") -> None:
+        self.__outputs.append(synapse)
+
+    def calculate(self):
+        super().calculate()
+        for o in self.__outputs:
+            o.set_output(self.__value)
+
+
+class HiddenNeuron(GeneticNeuron):
+    __outputs: List["GeneticSynapse"]
+    __inputs: List["GeneticSynapse"]
+
+    def __init__(self):
+        super().__init__()
+        self.__inputs = []
+        self.__outputs = []
+
+    def add_input(self, synapse: "GeneticSynapse") -> None:
+        self.__inputs.append(synapse)
+
+    def add_output(self, synapse: "GeneticSynapse") -> None:
+        self.__outputs.append(synapse)
+
+    def calculate(self) -> None:
+        super().calculate()
+        weighted_sum = 0
+        for i in self.__inputs:
+            weighted_sum += i.get_output()
+        last_result = self.sigmoid(weighted_sum)
+        for o in self.__outputs:
+            o.set_output(last_result)
+
+
+class OutputNeuron(GeneticNeuron):
+    __inputs: List["GeneticSynapse"]
+    __result: bool
+
+    def __init__(self):
+        super().__init__()
+        self.__inputs = []
+        self.__result = False
+
+    def add_input(self, synapse: "GeneticSynapse") -> None:
+        self.__inputs.append(synapse)
+
+    def calculate(self) -> None:
+        super().calculate()
+        weighted_sum = 0
+        for i in self.__inputs:
+            weighted_sum += i.get_output()
+        self.__result = self.sigmoid(weighted_sum) > 0.5
+
+    def get_result(self) -> bool:
+        return self.__result
+
+
+class GeneticSynapse:
+
+    __availability: bool
+    __output: float
+    __end_neuron: GeneticNeuron
+    __weight: float
+    __start_neuron: GeneticNeuron
+
+    # Constructor
+
+    def __init__(self, start_neuron: GeneticNeuron, weight: float, end_neuron: GeneticNeuron):
+        self.__start_neuron = start_neuron
+        self.__weight = weight
+        self.__end_neuron = end_neuron
+        self.__output = 0.0
+        self.__availability = True
+
+    # Internal value management
+
+    def set_output(self, result: float) -> None:
+        self.__output = self.__weight*result
+
+    def get_output(self) -> float:
+        if self.__start_neuron.get_calculations() < self.__end_neuron.get_calculations():
+            self.__start_neuron.calculate()
+        return self.__output
+
+    # Availability management
+
+    def enable(self) -> None:
+        self.__availability = True
+
+    def disable(self) -> None:
+        self.__availability = False
+
+    def is_available(self) -> bool:
+        return self.__availability
+
+    # SETTERS
+
+    def set_start(self, start_neuron: GeneticNeuron) -> None:
+        self.__start_neuron = start_neuron
+
+    def set_weight(self, weight: float) -> None:
+        self.__weight = weight
+
+    def set_end(self, end_neuron: GeneticNeuron) -> None:
+        self.__end_neuron = end_neuron
+
+    # GETTERS
+
+    def get_start(self) -> GeneticNeuron:
+        return self.__start_neuron
+
+    def get_weight(self) -> float:
+        return self.__weight
+
+    def get_end(self) -> GeneticNeuron:
+        return self.__end_neuron
 
 
 class Network:

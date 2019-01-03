@@ -3,7 +3,7 @@ from random import Random
 from typing import List, Optional
 
 from neuroevolution_algorithms.NEAT import Neat
-from neuroevolution_algorithms.network import Network
+from neuroevolution_algorithms.neat_network import Network
 from snake.snake_game import Game, Snake, AI
 
 snake_game = Game(11, 11)
