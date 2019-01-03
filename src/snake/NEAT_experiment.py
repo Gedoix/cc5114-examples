@@ -1,6 +1,6 @@
 import random
 from random import Random
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from neuroevolution_algorithms.NEAT import Neat
 from neuroevolution_algorithms.neat_network import Network
@@ -39,7 +39,7 @@ class Experiment:
 
             self.neat.advance_generation()
 
-    def fitness_function(self, population: List[Network]) -> List[float, int]:
+    def fitness_function(self, population: List[Network]) -> List[Union[float, int]]:
         self.last_snakes = []
         self.last_seeds = []
         for n in population:

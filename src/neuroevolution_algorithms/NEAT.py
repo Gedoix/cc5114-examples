@@ -1,6 +1,6 @@
 import random
 from random import Random
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Union
 
 from neuroevolution_algorithms.neat_network import Network
 
@@ -23,14 +23,14 @@ class Neat:
     __large_species_size: int
     __generation_stagnancy_cap: int
     __population_size: int
-    __fitness_function: Callable[[List[Network]], List[float, int]]
+    __fitness_function: Callable[[List[Network]], List[Union[float, int]]]
     __starting_seed: Optional[int]
     __seed: Optional[int]
     __symbolic_species: List[List[int]]
     __population: List[Network]
 
     def __init__(self, input_amount: int, output_amount: int,
-                 fitness_function: Callable[[List[Network]], List[float, int]],
+                 fitness_function: Callable[[List[Network]], List[Union[float, int]]],
                  population_size: int = 150, generation_stagnancy_cap: int = 15, large_species_size: int = 5,
                  mutation_change_weights_chance: float = 80.0, mutation_add_synapse_chance: float = 5.0,
                  mutation_add_neuron_chance: float = 3.0, no_crossover_chance: float = 25.0,
@@ -132,11 +132,21 @@ class Neat:
                 if self.__generator.uniform(0, 100) <= self.__no_crossover_chance:
                     child = self.__population[s[self.__generator.randint(0, len(s) - 1)]].clone(self.__generation)
                 else:
-                    child = self.__population[s[self.__generator.randint(0, len(s) - 1)]].clone(self.__generation)
+                    child_index = s[self.__generator.randint(0, len(s) - 1)]
+                    if len(s) == 1 and child_index == 0:
+                        continue
+                    while child_index == 0:
+                        child_index = s[self.__generator.randint(0, len(s) - 1)]
+                    child = self.__population[child_index].clone(self.__generation)
                     if self.__generator.uniform(0, 100) <= self.__inter_species_mating_chance:
-                        mate = self.__population[self.__generator.randint(0, len(self.__population) - 1)]
+                        mate_index = self.__generator.randint(0, len(self.__population) - 1)
+                        while mate_index < child_index:
+                            mate_index = self.__generator.randint(0, len(self.__population) - 1)
                     else:
-                        mate = self.__population[s[self.__generator.randint(0, len(s) - 1)]]
+                        mate_index = s[self.__generator.randint(0, len(s) - 1)]
+                        while mate_index < child_index:
+                            mate_index = s[self.__generator.randint(0, len(s) - 1)]
+                    mate = self.__population[mate_index]
                     child.crossover(mate)
 
                 if self.__generator.uniform(0, 100) <= self.__mutation_change_weights_chance:
@@ -148,8 +158,12 @@ class Neat:
                 new_population.append(child)
 
         while len(new_population) < self.__population_size:
-            child = self.__population[self.__generator.randint(0, len(self.__population) - 1)].clone(self.__generation)
-            mate = self.__population[self.__generator.randint(0, len(self.__population) - 1)]
+            child_index = self.__generator.randint(1, len(self.__population) - 1)
+            child = self.__population[child_index].clone(self.__generation)
+            mate_index = self.__generator.randint(0, len(self.__population) - 1)
+            while mate_index < child_index:
+                mate_index = self.__generator.randint(0, len(self.__population) - 1)
+            mate = self.__population[mate_index]
             child.crossover(mate)
             if self.__generator.uniform(0, 100) <= self.__mutation_change_weights_chance:
                 child.mutation_change_weights()
@@ -219,14 +233,15 @@ class Neat:
         return Neat.__quicksort_by_fitness(lesser) + equal + Neat.__quicksort_by_fitness(greater)
 
     @staticmethod
-    def builder(input_amount: int, output_amount: int, fitness_function: Callable[[List[Network]], List[float, int]],
+    def builder(input_amount: int, output_amount: int,
+                fitness_function: Callable[[List[Network]], List[Union[float, int]]],
                 seed: int = None) -> "NeatBuilder":
         return Neat.NeatBuilder(input_amount, output_amount, fitness_function, seed)
 
     class NeatBuilder:
 
         def __init__(self, input_amount: int, output_amount: int,
-                     fitness_function: Callable[[List[Network]], List[float, int]], seed: int = None):
+                     fitness_function: Callable[[List[Network]], List[Union[float, int]]], seed: int = None):
             self.input_amount = input_amount
             self.output_amount = output_amount
             self.fitness_function = fitness_function

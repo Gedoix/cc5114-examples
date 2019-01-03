@@ -1,5 +1,5 @@
 import random
-from typing import List, Any, Tuple
+from typing import List, Any, Tuple, Union
 
 
 def find(l: List[Any], obj: Any) -> int:
@@ -213,7 +213,7 @@ class Network:
         for _ in self.__hidden_neurons:
             new.__hidden_neurons.append(HiddenNeuron())
 
-        for synapse_index, index_1, is_input, index_2, is_output in enumerate(self.__symbolic_synapses):
+        for synapse_index, (index_1, is_input, index_2, is_output) in enumerate(self.__symbolic_synapses):
             if is_input:
                 start_neuron = new.__input_neurons[index_1]
             else:
@@ -231,7 +231,7 @@ class Network:
 
         return new
 
-    def calculate(self, inputs: List[int, float]) -> List[bool]:
+    def calculate(self, inputs: List[Union[int, float]]) -> List[bool]:
         if len(inputs) != len(self.__input_neurons):
             raise RuntimeError("Wrong input length, doesn't correspond with the network's signature")
 
@@ -298,7 +298,7 @@ class Network:
         if old_is_input:
             new_index = 0
             self.__hidden_neurons.insert(0, new_neuron)
-            for synapse_index, index_1, is_input, index_2, is_output in enumerate(self.__symbolic_synapses):
+            for synapse_index, (index_1, is_input, index_2, is_output) in enumerate(self.__symbolic_synapses):
                 if not is_input:
                     index_1 += 1
                 if not is_output:
@@ -310,7 +310,7 @@ class Network:
         else:
             new_index = int((old_index_1+old_index_2)/2.0 + 1)
             self.__hidden_neurons. insert(new_index, new_neuron)
-            for synapse_index, index_1, is_input, index_2, is_output in enumerate(self.__symbolic_synapses):
+            for synapse_index, (index_1, is_input, index_2, is_output) in enumerate(self.__symbolic_synapses):
                 if index_1 >= new_index and not is_input:
                     index_1 += 1
                 if index_2 >= new_index and not is_output:
