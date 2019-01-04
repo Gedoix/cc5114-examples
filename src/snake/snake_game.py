@@ -298,19 +298,19 @@ class Game:
 
     Can either simulate multiple games of snake without graphics or show a game for a single snake in a separate window.
     """
-    width: int
+    cells_per_side: int
     screen: Optional[pygame.display.__class__]
     font: Optional[pygame.font.FontType]
 
-    def __init__(self, cells_width: int):
+    def __init__(self, cells_per_side: int):
         """
         Constructor of a Game instance, Sets the board's width and height.
 
-        :param cells_width: The board's width in cells
+        :param cells_per_side: The board's width in cells
         """
         if LOG["Game"]:
             print("[Game] Initializing Game")
-        self.width = cells_width
+        self.cells_per_side = cells_per_side
 
         # Placeholders for future fields, having to do with pygame objects
         self.screen = None
@@ -503,7 +503,7 @@ class Game:
         :param generator: Pseudo-random number generator
         :return: A position within the board, uniformly chosen
         """
-        return generator.randint(0, self.width - 1), generator.randint(0, self.width - 1)
+        return generator.randint(0, self.cells_per_side - 1), generator.randint(0, self.cells_per_side - 1)
 
     def __draw_board(self, color: Tuple[int, int, int]) -> None:
         """
@@ -512,12 +512,12 @@ class Game:
         :param color: Color of the lines
         """
         # Vertical lines
-        for i in range(self.width+1):
-            x = int(WIDTH/2 + (WIDTH/2)*(i/self.width))
+        for i in range(self.cells_per_side + 1):
+            x = int(WIDTH / 2 + (WIDTH/2) * (i / self.cells_per_side))
             pygame.draw.line(self.screen, color, (x, HEIGHT), (x, HEIGHT/3), 5)
         # Horizontal lines
-        for j in range(self.width+1):
-            y = int(HEIGHT/3 + (HEIGHT*2/3)*(j/self.width))
+        for j in range(self.cells_per_side + 1):
+            y = int(HEIGHT / 3 + (HEIGHT*2/3) * (j / self.cells_per_side))
             pygame.draw.line(self.screen, color, (WIDTH, y), (WIDTH/2, y), 5)
 
     def __fill_cell(self, color: Tuple[int, int, int], i: int, j: int) -> None:
@@ -528,10 +528,10 @@ class Game:
         :param i: Horizontal coordinate of the cell
         :param j: Vertical coordinate of the cell
         """
-        xi = int(WIDTH/2 + (WIDTH/2)*(i/self.width))+3
-        xf = int(WIDTH/2 + (WIDTH/2)*((i+1)/self.width))-3
-        yi = int(HEIGHT/3 + (HEIGHT*2/3)*(j/self.width))+3
-        yf = int(HEIGHT/3 + (HEIGHT*2/3)*((j+1)/self.width))-3
+        xi = int(WIDTH / 2 + (WIDTH/2) * (i / self.cells_per_side)) + 3
+        xf = int(WIDTH / 2 + (WIDTH/2) * ((i+1) / self.cells_per_side)) - 3
+        yi = int(HEIGHT / 3 + (HEIGHT*2/3) * (j / self.cells_per_side)) + 3
+        yf = int(HEIGHT / 3 + (HEIGHT*2/3) * ((j+1) / self.cells_per_side)) - 3
 
         r = pygame.Rect((xi, yi), (xf-xi, yf-yi))
 
