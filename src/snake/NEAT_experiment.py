@@ -33,7 +33,7 @@ class Experiment:
         self.generator = random.Random()
         if seed is not None:
             self.generator.seed(seed)
-        self.snake_game = Game(11, 11)
+        self.snake_game = Game(11)
         self.last_used_seed = self.generator.getstate()[0]
 
     def main(self) -> None:
