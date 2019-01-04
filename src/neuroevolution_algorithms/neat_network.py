@@ -393,6 +393,7 @@ class Network:
     __input_neurons: List[InputNeuron] = []
     __hidden_neurons: List[HiddenNeuron] = []
     __output_neurons: List[OutputNeuron] = []
+    __calculations: int
 
     # All synapses in the network
     __synapses: List[GeneticSynapse] = []
@@ -419,6 +420,27 @@ class Network:
         :param output_amount: Amount of outputs to produce
         :param seed: Seed of the pseudo-random generator
         """
+        # All Neurons in the network
+        self.__input_neurons = []
+        self.__hidden_neurons = []
+        self.__output_neurons = []
+        self.__calculations = 0
+
+        # All synapses in the network
+        self.__synapses = []
+
+        # Abstract representation of a synapse, using indexes of neurons in the network's lists as ids
+        self.__symbolic_synapses = []
+
+        # Pseudo-random number generator
+        self.__generator = random.Random()
+
+        # Fitness of the network as a classifier
+        self.__fitness = 0.0
+
+        # Shared fitness of the network, altered by it's species
+        self.__shared_fitness = 0.0
+
         # Seed setting
         if seed is not None:
             self.set_seed(seed)
@@ -450,10 +472,10 @@ class Network:
 
         Should be the first method of construction used.
 
-        :param input_amount:
-        :param output_amount:
-        :param seed:
-        :return:
+        :param input_amount: Length of an acceptable input list
+        :param output_amount: Length of an acceptable output list
+        :param seed: Pseudo-random generator seed
+        :return: A new network
         """
         n = Network(input_amount, output_amount, seed)
         n.__initialize_synapses()
@@ -463,7 +485,7 @@ class Network:
 
     def clone(self) -> "Network":
         """
-        Clones the network, copying all values except for fitnesses.
+        Clones the network, copying all values including reduced base fitnesses.
 
         :return: A new network, identical to self
         """
@@ -496,6 +518,9 @@ class Network:
             # The symbolic counterpart is added too
             new.__symbolic_synapses.append((index_1, is_input, index_2, is_output))
 
+        new.__fitness = 0.95*self.__fitness
+        new.__shared_fitness = 0.95*self.__shared_fitness
+
         return new
 
     # MAIN EXECUTION
@@ -510,6 +535,8 @@ class Network:
         # Check if the contracts match
         if len(inputs) != len(self.__input_neurons):
             raise RuntimeError("Wrong input length, doesn't correspond with the network's signature")
+
+        self.__calculations += 1
 
         # The input values are set
         for index, i in enumerate(self.__input_neurons):
@@ -531,8 +558,8 @@ class Network:
         """
         for synapse in self.__synapses:
             # Chance of linear perturbation
-            if self.choose_with_probability(90.0):
-                perturbation = 0.1 if self.choose_with_probability(50.0) else -0.1
+            if self.choose_with_probability(99.0):
+                perturbation = 0.01 if self.choose_with_probability(50.0) else -0.01
                 new_weight = synapse.get_weight() + perturbation
             # Chance of re-roll
             else:
@@ -619,6 +646,7 @@ class Network:
 
         # The new neuron is created
         new_neuron = HiddenNeuron()
+        new_neuron.set_calculations(self.get_calculations())
 
         # Weights are generated
         new_weight_1 = 1.0
@@ -661,7 +689,7 @@ class Network:
 
     # CROSSOVER
 
-    def crossover(self, other: "Network") -> None:
+    def crossover(self, other: "Network", share_disjoins: bool) -> None:
         """
         Adds synapses from 'other' into self's synapse list.
 
@@ -670,10 +698,6 @@ class Network:
         # Check if the contracts match
         if other.get_io_signature() != self.get_io_signature():
             raise ValueError("The networks have different input/output signatures")
-
-        # Check that the resulting network comes from the best parent
-        if self.get_fitness() < other.get_fitness():
-            raise ValueError("The network to cross over has lower fitness than it's parent")
 
         # Smallest amount of synapses among 'self' and 'other'
         min_innovation = min(self.get_innovation(), other.get_innovation())
@@ -692,8 +716,8 @@ class Network:
                 else:
                     self.__synapses[i].enable()
 
-            # If they are not the same, and the fitnesses are the same
-            if self.get_fitness() == other.get_fitness() and self_symbolic_synapse != other_symbolic_synapse:
+            # If they are not the same, and the disjoints will be shared
+            if share_disjoins and self_symbolic_synapse != other_symbolic_synapse:
                 # There's a 50% chance of swapping for the other one
                 if self.choose_with_probability(50.0):
 
@@ -789,7 +813,7 @@ class Network:
 
         :param fitness: New fitness
         """
-        self.__fitness = max(self.__fitness*0.95, fitness)
+        self.__fitness = fitness
 
     def set_shared_fitness(self, shared_fitness: float) -> None:
         """
@@ -840,6 +864,14 @@ class Network:
         :return: The network's innovation
         """
         return len(self.__synapses)
+
+    def get_calculations(self) -> int:
+        """
+        Gets the amount of calculations performed by the network.
+
+        :return: The amount of calculations to date
+        """
+        return self.__calculations
 
     # PROBABILITY MANAGERS
 

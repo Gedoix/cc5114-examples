@@ -29,10 +29,11 @@ INFINITY: int = 2**63 - 1
 LOG = {"TestAI": False, "Snake": False, "Game": True}
 
 
-def modified_sigmoid(x: float) -> float:
-    import numpy as np
+def normalize_distances(x: float) -> float:
     import math
-    return math.exp(-np.logaddexp(0.0, -4.9*float(x)))
+    # import numpy as np
+    # return (math.exp(-np.logaddexp(0.0, -4.9*float(x)))-0.5)*2.0
+    return math.tanh(x)
 
 
 class AI:
@@ -97,29 +98,26 @@ class Snake:
 
     Contains a list of the positions of the cells it occupies, as well as it's own AI and step method.
     """
-    width: int
-    height: int
+    cells_per_side: int
     positions: List[Tuple[int, int]]
     current_direction: int
     ai: AI
     living_state: bool
 
-    def __init__(self, cells_width: int, cells_height: int, ai: AI):
+    def __init__(self, cells_per_side: int, ai: AI):
         """
         Constructor of the Snake.
 
-        :param cells_width: Width in cells of the play board
-        :param cells_height: Height in cells of the play board
+        :param cells_per_side: Width in cells of the play board
         :param ai: Controller of the Snake, must have a ".choose(...)" method receiving 9 parameters, the distances
         from the Snake's head to the edge of the board, to it's own tail, and to the fruit, in each of the three
         directions left, front and right (respective to the current direction of it's movement)
         """
         if LOG["Snake"]:
             print("[Snake] Initializing Snake")
-        self.width = cells_width
-        self.height = cells_height
+        self.cells_per_side = cells_per_side
         self.positions = []
-        self.positions.append((max(int(self.width / 2)-1, 0), max(int(self.height / 2)-1, 0)))
+        self.positions.append((max(int(self.cells_per_side / 2) - 1, 0), max(int(self.cells_per_side / 2) - 1, 0)))
         self.current_direction = NORTH
         self.ai = ai
         self.living_state = True
@@ -137,8 +135,8 @@ class Snake:
         # First, the distances to be passed to ai are re-calculated
         # The order is [NORTH, SOUTH, WEST, EAST]
         # Distance to the walls of the board
-        distances_to_walls = [self.positions[0][1], self.height-self.positions[0][1]-1,
-                              self.positions[0][0], self.width-self.positions[0][0]-1]
+        distances_to_walls = [self.positions[0][1], self.cells_per_side - self.positions[0][1] - 1,
+                              self.positions[0][0], self.cells_per_side - self.positions[0][0] - 1]
 
         # Shortest distances to the snake's tail (one of them is guaranteed to be 1 if the
         # snake's length is more than 1)
@@ -189,15 +187,15 @@ class Snake:
             right = 1
 
         # The ai is consulted
-        next_direction = self.ai.choose(modified_sigmoid(distances_to_walls[left]),
-                                        modified_sigmoid(distances_to_walls[front]),
-                                        modified_sigmoid(distances_to_walls[right]),
-                                        modified_sigmoid(distances_to_tail[left]),
-                                        modified_sigmoid(distances_to_tail[front]),
-                                        modified_sigmoid(distances_to_tail[right]),
-                                        modified_sigmoid(distances_to_fruit[left]),
-                                        modified_sigmoid(distances_to_fruit[front]),
-                                        modified_sigmoid(distances_to_fruit[right]))
+        next_direction = self.ai.choose(normalize_distances(distances_to_walls[left]/self.cells_per_side),
+                                        normalize_distances(distances_to_walls[front]/self.cells_per_side),
+                                        normalize_distances(distances_to_walls[right]/self.cells_per_side),
+                                        normalize_distances(distances_to_tail[left]/self.cells_per_side),
+                                        normalize_distances(distances_to_tail[front]/self.cells_per_side),
+                                        normalize_distances(distances_to_tail[right]/self.cells_per_side),
+                                        normalize_distances(distances_to_fruit[left]/self.cells_per_side),
+                                        normalize_distances(distances_to_fruit[front]/self.cells_per_side),
+                                        normalize_distances(distances_to_fruit[right]/self.cells_per_side))
 
         # Direction is updated
         if next_direction[0]:
@@ -222,8 +220,8 @@ class Snake:
             self.positions[0] = (self.positions[0][0]+1, self.positions[0][1])
 
         # Checks for end of game conditions
-        if self.positions[0][0] < 0 or self.positions[0][0] >= self.width or \
-                self.positions[0][1] < 0 or self.positions[0][1] >= self.height:
+        if self.positions[0][0] < 0 or self.positions[0][0] >= self.cells_per_side or \
+                self.positions[0][1] < 0 or self.positions[0][1] >= self.cells_per_side:
             self.living_state = False
 
         # The tail moves
@@ -358,7 +356,7 @@ class Game:
             print("[Game] Quitting Pygame Display")
         pygame.display.quit()
 
-    def simulate(self, snakes: List[Snake], seed: int) -> (List[Snake], List[int], List[int]):
+    def simulate(self, snakes: List[Snake], seed: int) -> Tuple[List[int], List[int]]:
         """
         Snake game simulator, can run multiple Snake object's games at the same time.
 
@@ -393,33 +391,44 @@ class Game:
 
         if LOG["Game"]:
             print("[Game] Entering Simulation Loop")
+
         # Simulation loop, lasts until there's no more snakes alive (capping at 10000 steps per snake)
         any_alive = True
         while any_alive:
+
             # Stop condition resets
             any_alive = False
+
             # For each snake
             for i in range(len(snakes)):
+
                 # Checks if alive
                 if snakes[i].is_alive():
+
                     # Stop condition updates
                     any_alive = True
+
                     # Step
                     snakes[i].step(fruits[i])
+
                     # If fruit was eaten, it resets and adds to the score
                     if snakes[i].at(fruits[i]):
                         fruits[i] = self.__generate_fruit(generators[i])
                         while snakes[i].covers(fruits[i]):
                             fruits[i] = self.__generate_fruit(generators[i])
                         scores[i] += 1
+
                     # The step counter increases
                     times[i] += 1
+
                     # Checks if it's time to stop
                     if times[i] > max(30*scores[i], 100):
                         snakes[i].kill()
+
         if LOG["Game"]:
             print("[Game] Quitting Simulation")
-        return snakes, scores, times
+
+        return scores, times
 
     def show(self, snake: Snake, seed: int, subtitle: str, fps: int = 1) -> None:
         """
@@ -589,7 +598,7 @@ def __test():
     __test_fps = 1
     __test_seed = 4
     __test_ai = TestAI()
-    __test_snake = Snake(__test_width, __test_height, __test_ai)
+    __test_snake = Snake(__test_width, __test_ai)
     __test_game = Game(__test_width, __test_height)
     __test_game.show(__test_snake, __test_seed, "Test run of the program", __test_fps)
 

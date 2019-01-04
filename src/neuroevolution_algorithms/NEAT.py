@@ -46,7 +46,30 @@ class Neat:
                  inter_species_mating_chance: float = 0.1, excess_distance_coefficient: float = 1.0,
                  disjoint_distance_coefficient: float = 1.0, weights_distance_coefficient: float = 0.4,
                  species_distance_cap: float = 3.0, seed: int = None):
+        """
+        Constructor method for a NEAT algorithm.
 
+        It's better to use the '.builder()' method for generating NEATs.
+
+        :param input_amount: Amount of inputs for the networks
+        :param output_amount: Amount of outputs ofr the networks
+        :param fitness_function: Fitness function for networks
+        :param population_size: Size of the overall population
+        :param generation_stagnancy_cap: Cap of stagnancy in generations
+        :param large_species_size: Size from which a species can be considered large
+        :param mutation_change_weights_chance: Chance percentage of the weights of a newborn network of mutating
+        :param mutation_add_synapse_chance: Chance percentage of a newborn network to have a new synapse mutated
+        :param mutation_add_neuron_chance: Chance percentage of a newborn network to have a new neuron mutated
+        :param no_crossover_chance: Chance percentage of a newborn network to have no crossover between parents
+        :param inter_species_mating_chance: Chance percentage of a newborn network to be bork of inter-species parents
+        :param excess_distance_coefficient: Coefficient magnifying the effect of excess distance in species separation
+        :param disjoint_distance_coefficient: Coefficient magnifying the effect of disjoint distance in \
+        species separation
+        :param weights_distance_coefficient: Coefficient magnifying the effect of weight distance in species separation
+        :param species_distance_cap: Distance cap between members of different species
+        :param seed: Seed for pseudo-random number generation
+        """
+        # The values are saved
         self.__fitness_function = fitness_function
 
         self.__population_size = population_size
@@ -66,11 +89,12 @@ class Neat:
 
         self.__species_distance_cap = species_distance_cap
 
-        self.__starting_seed = seed
         self.__seed = seed
         self.__generator = random.Random()
         if seed is not None:
             self.__generator.seed(seed)
+
+        self.__starting_seed = self.__generator.getstate()[0]
 
         self.__generation = 0
 
@@ -88,25 +112,16 @@ class Neat:
             first_species.append(i)
         self.__symbolic_species.append(first_species)
 
-    def get_population(self) -> List[Network]:
-        return self.__population
-
-    def get_fitnesses(self) -> List[float]:
-        fitnesses = []
-        for n in self.__population:
-            fitnesses.append(n.get_fitness())
-        return fitnesses
-
-    def get_shared_fitness_sums(self) -> List[float]:
-        return self.__shared_fitness_sums
-
-    def get_total_shared_fitness(self) -> float:
-        return self.__total_shared_fitness
-
     # def get_best_network_details(self) -> List[Tuple[int, bool, int, bool, float]]:
     #
 
     def advance_generation(self) -> None:
+        """
+        Advances the population by a single generation.
+
+        First it cleans useless species, then reproduces those who are left, re-calculates their fitnesses, sorts
+        them, separates species, and finally calculates the shared fitnesses of all networks.
+        """
         if self.__generation == 0:
             self.__calculate_fitnesses()
             self.__sort_population_by_fitness()
@@ -122,80 +137,79 @@ class Neat:
         self.__generation += 1
 
     def __remove_useless_species(self) -> None:
+        """
+        Sets a species as removable by changing it's shared fitness sum to 0.
+
+        Removes large species with under-achieving fitnesses from the population
+        """
         for index, s in enumerate(self.__symbolic_species):
             best = max(s)
-            if best <= 0.1*self.__population_size and len(self.__shared_fitness_sums) >= 5:
+            if best <= 0.75*self.__population_size and len(self.__shared_fitness_sums) >= self.__large_species_size:
+                print("-------------------------Species deleted")
                 self.__total_shared_fitness -= self.__shared_fitness_sums[index]
                 self.__shared_fitness_sums[index] = 0.0
+                for n_index in s:
+                    self.__population[n_index].set_shared_fitness(0.0)
 
     def __reproduce_population(self) -> None:
         new_population = []
         for index, s in enumerate(self.__symbolic_species):
-            keep_best = len(s) >= self.__large_species_size
-            offspring_amount = round(self.__population_size * (self.__shared_fitness_sums[index] /
-                                                               self.__total_shared_fitness)
-                                     if self.__total_shared_fitness != 0
-                                     else self.__population_size * (1.0 / len(self.__symbolic_species)))
+            if self.__shared_fitness_sums[index] != 0.0 or self.__total_shared_fitness == 0.0:
+                keep_best = len(s) >= self.__large_species_size
+                offspring_amount = int(self.__population_size * (self.__shared_fitness_sums[index] /
+                                                                 self.__total_shared_fitness)
+                                       if self.__total_shared_fitness != 0
+                                       else self.__population_size * (1.0 / len(self.__symbolic_species)))
 
-            if keep_best:
-                best_i = max(s)
-                new_population.append(self.__population[best_i])
+                if keep_best:
+                    best_i = max(s)
+                    new_population.append(self.__population[best_i])
+                    offspring_amount -= 1
 
-            for _ in range(offspring_amount-1 if keep_best else offspring_amount):
-                if self.choose_with_probability(self.__no_crossover_chance):
-                    child = self.__population[s[self.__generator.randint(0, len(s) - 1)]].clone()
-                else:
-                    child_index = s[self.__generator.randint(0, len(s) - 1)]
-                    if len(s) == 1 and child_index == 0:
-                        continue
-                    while child_index == 0:
+                for _ in range(offspring_amount):
+                    if len(s) == 1 or self.choose_with_probability(self.__no_crossover_chance):
+                        child = self.__population[s[self.__generator.randint(0, len(s) - 1)]].clone()
+                    else:
                         child_index = s[self.__generator.randint(0, len(s) - 1)]
-                    child = self.__population[child_index].clone()
-                    if self.choose_with_probability(self.__inter_species_mating_chance):
-                        mate_index = self.__generator.randint(0, len(self.__population) - 1)
-                        while mate_index < child_index:
+                        child = self.__population[child_index]
+                        if self.choose_with_probability(self.__inter_species_mating_chance):
                             mate_index = self.__generator.randint(0, len(self.__population) - 1)
-                    else:
-                        mate_index = s[self.__generator.randint(0, len(s) - 1)]
-                        while mate_index < child_index:
+                            while mate_index == child_index or (
+                                    self.__population[mate_index].get_shared_fitness() == 0.0 and
+                                    not self.__total_shared_fitness == 0.0):
+                                mate_index = self.__generator.randint(0, len(self.__population) - 1)
+                        else:
                             mate_index = s[self.__generator.randint(0, len(s) - 1)]
-                    mate = self.__population[mate_index]
-                    if child.get_fitness() >= mate.get_fitness():
-                        child.crossover(mate)
-                    else:
-                        mate.crossover(child)
-                        child = mate
+                            while mate_index == child_index:
+                                mate_index = s[self.__generator.randint(0, len(s) - 1)]
+                        mate = self.__population[mate_index]
+                        share_disjoints = child.get_fitness() == mate.get_fitness()
+                        if child.get_fitness() >= mate.get_fitness():
+                            child = child.clone()
+                            child.crossover(mate, share_disjoints)
+                        else:
+                            mate = mate.clone()
+                            mate.crossover(child, share_disjoints)
+                            child = mate
 
-                if self.choose_with_probability(self.__mutation_change_weights_chance):
-                    child.mutation_change_weights()
-                if self.choose_with_probability(self.__mutation_add_synapse_chance):
-                    child.mutation_add_synapse()
-                if self.choose_with_probability(self.__mutation_add_neuron_chance):
-                    child.mutation_add_neuron()
-                new_population.append(child)
+                    if self.choose_with_probability(self.__mutation_change_weights_chance):
+                        child.mutation_change_weights()
+                    if self.choose_with_probability(self.__mutation_add_synapse_chance):
+                        child.mutation_add_synapse()
+                    if self.choose_with_probability(self.__mutation_add_neuron_chance):
+                        child.mutation_add_neuron()
+                    new_population.append(child)
 
-        while len(new_population) < self.__population_size:
-            child_index = self.__generator.randint(1, len(self.__population) - 1)
-            child = self.__population[child_index].clone()
-            mate_index = self.__generator.randint(0, len(self.__population) - 1)
-            while mate_index < child_index:
-                mate_index = self.__generator.randint(0, len(self.__population) - 1)
-            mate = self.__population[mate_index]
-            child.crossover(mate)
-            if self.choose_with_probability(self.__mutation_change_weights_chance):
-                child.mutation_change_weights()
-            if self.choose_with_probability(self.__mutation_add_synapse_chance):
-                child.mutation_add_synapse()
-            if self.choose_with_probability(self.__mutation_add_neuron_chance):
-                child.mutation_add_neuron()
-            new_population.append(child)
+        if len(new_population) < self.__population_size:
+            for i in range(self.__population_size-len(new_population)):
+                new_population.append(self.__population[self.__population_size-1-i])
 
-        self.__population = new_population[::-1]
+        self.__population = new_population
 
     def __calculate_fitnesses(self) -> None:
         fitnesses = self.__fitness_function(self.__population)
         for i, n in enumerate(self.__population):
-            n.set_fitness(fitnesses[i])
+            n.set_fitness(max(n.get_fitness()*0.99, fitnesses[i]))
 
     def __sort_population_by_fitness(self) -> None:
         self.__population = self.__quicksort_by_fitness(self.__population)
@@ -230,15 +244,6 @@ class Neat:
                 self.__shared_fitness_sums[index] += shared_fitness
                 self.__total_shared_fitness += shared_fitness
 
-    def get_generation(self) -> int:
-        return self.__generation
-
-    def choose_with_probability(self, probability_percentage: float) -> bool:
-        return self.__generator.uniform(0, 100) < probability_percentage
-
-    def get_random_float(self) -> float:
-        return self.__generator.uniform(-2.0, 2.0)
-
     @staticmethod
     def __quicksort_by_fitness(population: List[Network]) -> List[Network]:
         lesser = []
@@ -256,6 +261,39 @@ class Neat:
             else:
                 equal.append(n)
         return Neat.__quicksort_by_fitness(lesser) + equal + Neat.__quicksort_by_fitness(greater)
+
+    def get_population(self) -> List[Network]:
+        return self.__population
+
+    def get_fitnesses(self) -> List[float]:
+        fitnesses = []
+        for n in self.__population:
+            fitnesses.append(n.get_fitness())
+        return fitnesses
+
+    def get_best_fitness(self) -> float:
+        return self.__population[len(self.__population)-1].get_fitness()
+
+    def get_maximum_innovation(self) -> int:
+        result = 0
+        for n in self.__population:
+            result = max(result, n.get_innovation())
+        return result
+
+    def get_shared_fitness_sums(self) -> List[float]:
+        return self.__shared_fitness_sums
+
+    def get_total_shared_fitness(self) -> float:
+        return self.__total_shared_fitness
+
+    def get_generation(self) -> int:
+        return self.__generation
+
+    def choose_with_probability(self, probability_percentage: float) -> bool:
+        return self.__generator.uniform(0, 100) <= probability_percentage
+
+    def get_random_float(self) -> float:
+        return self.__generator.uniform(-2.0, 2.0)
 
     @staticmethod
     def builder(input_amount: int, output_amount: int,
@@ -313,50 +351,51 @@ class Neat:
             self.seed = seed
             return self
 
-        def set_population_size(self, population_size: int) -> "Neat.NeatBuilder":
+        def set_population_size(self, population_size: int = 150) -> "Neat.NeatBuilder":
             self.population_size = population_size
             return self
 
-        def set_generation_stagnancy_cap(self, generation_stagnancy_cap: int) -> "Neat.NeatBuilder":
+        def set_generation_stagnancy_cap(self, generation_stagnancy_cap: int = 15) -> "Neat.NeatBuilder":
             self.generation_stagnancy_cap = generation_stagnancy_cap
             return self
 
-        def set_large_species_size(self, large_species_size: int) -> "Neat.NeatBuilder":
+        def set_large_species_size(self, large_species_size: int = 5) -> "Neat.NeatBuilder":
             self.large_species_size = large_species_size
             return self
 
-        def set_mutation_change_weights_chance(self, mutation_change_weights_chance: float) -> "Neat.NeatBuilder":
+        def set_mutation_change_weights_chance(self,
+                                               mutation_change_weights_chance: float = 80.0) -> "Neat.NeatBuilder":
             self.mutation_change_weights_chance = mutation_change_weights_chance
             return self
 
-        def set_mutation_add_synapse_chance(self, mutation_add_synapse_chance: float) -> "Neat.NeatBuilder":
+        def set_mutation_add_synapse_chance(self, mutation_add_synapse_chance: float = 5.0) -> "Neat.NeatBuilder":
             self.mutation_add_synapse_chance = mutation_add_synapse_chance
             return self
 
-        def set_mutation_add_neuron_chance(self, mutation_add_neuron_chance: float) -> "Neat.NeatBuilder":
+        def set_mutation_add_neuron_chance(self, mutation_add_neuron_chance: float = 3.0) -> "Neat.NeatBuilder":
             self.mutation_add_neuron_chance = mutation_add_neuron_chance
             return self
 
-        def set_no_crossover_chance(self, no_crossover_chance: float) -> "Neat.NeatBuilder":
+        def set_no_crossover_chance(self, no_crossover_chance: float = 25.0) -> "Neat.NeatBuilder":
             self.no_crossover_chance = no_crossover_chance
             return self
 
-        def set_inter_species_mating_chance(self, inter_species_mating_chance: float) -> "Neat.NeatBuilder":
+        def set_inter_species_mating_chance(self, inter_species_mating_chance: float = 0.1) -> "Neat.NeatBuilder":
             self.inter_species_mating_chance = inter_species_mating_chance
             return self
 
-        def set_excess_distance_coefficient(self, excess_distance_coefficient: float) -> "Neat.NeatBuilder":
+        def set_excess_distance_coefficient(self, excess_distance_coefficient: float = 1.0) -> "Neat.NeatBuilder":
             self.excess_distance_coefficient = excess_distance_coefficient
             return self
 
-        def set_disjoint_distance_coefficient(self, disjoint_distance_coefficient: float) -> "Neat.NeatBuilder":
+        def set_disjoint_distance_coefficient(self, disjoint_distance_coefficient: float = 1.0) -> "Neat.NeatBuilder":
             self.disjoint_distance_coefficient = disjoint_distance_coefficient
             return self
 
-        def set_weights_distance_coefficient(self, weights_distance_coefficient: float) -> "Neat.NeatBuilder":
+        def set_weights_distance_coefficient(self, weights_distance_coefficient: float = 0.4) -> "Neat.NeatBuilder":
             self.weights_distance_coefficient = weights_distance_coefficient
             return self
 
-        def set_species_distance_cap(self, species_distance_cap: float) -> "Neat.NeatBuilder":
+        def set_species_distance_cap(self, species_distance_cap: float = 3.0) -> "Neat.NeatBuilder":
             self.species_distance_cap = species_distance_cap
             return self
