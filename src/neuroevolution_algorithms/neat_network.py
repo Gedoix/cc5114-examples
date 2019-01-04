@@ -689,11 +689,12 @@ class Network:
 
     # CROSSOVER
 
-    def crossover(self, other: "Network", share_disjoins: bool) -> None:
+    def crossover(self, other: "Network", share_disjoints: bool) -> None:
         """
         Adds synapses from 'other' into self's synapse list.
 
         :param other: Another network from which to take synapses and neuron positions
+        :param share_disjoints: Whether or not to scramble disjointed synapses among the networks
         """
         # Check if the contracts match
         if other.get_io_signature() != self.get_io_signature():
@@ -717,7 +718,7 @@ class Network:
                     self.__synapses[i].enable()
 
             # If they are not the same, and the disjoints will be shared
-            if share_disjoins and self_symbolic_synapse != other_symbolic_synapse:
+            if share_disjoints and self_symbolic_synapse != other_symbolic_synapse:
                 # There's a 50% chance of swapping for the other one
                 if self.choose_with_probability(50.0):
 
