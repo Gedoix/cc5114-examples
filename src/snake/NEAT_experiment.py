@@ -22,19 +22,31 @@ class Experiment:
     def __init__(self, seed: int = None):
         if LOG["Experiment"]:
             print("[Experiment] Initializing Experiment")
-        self.seed = seed
-        self.neat = Neat.builder(input_amount=9, output_amount=3, fitness_function=self.fitness_function, seed=seed).\
-            set_population_size(1000).\
-            set_species_distance_cap(0.9).\
-            set_mutation_add_neuron_chance(0.1).\
-            set_mutation_add_synapse_chance(0.5).\
-            set_mutation_change_weights_chance(90.0).\
-            build()
+
         self.generator = random.Random()
+
         if seed is not None:
-            self.generator.seed(seed)
+            self.seed = seed
+        else:
+            self.seed = self.generator.randint(0, 10000000)
+
+        self.generator.seed(self.seed)
+
+        self.last_used_seed = self.seed
+
+        if LOG["Experiment"]:
+            print("[Experiment] seed = " + str(self.seed))
+
+        self.neat = Neat.builder(input_amount=10, output_amount=3,
+                                 fitness_function=self.fitness_function, seed=self.seed).\
+            set_population_size(2000).\
+            set_species_distance_cap(0.25).\
+            set_mutation_add_neuron_chance(1.0).\
+            set_mutation_add_synapse_chance(2.0).\
+            set_mutation_change_weights_chance(85.0).\
+            build()
+
         self.snake_game = Game(11)
-        self.last_used_seed = self.generator.getstate()[0]
 
     def main(self) -> None:
         if LOG["Experiment"]:
@@ -107,11 +119,13 @@ class Experiment:
 
         def choose(self, distance_wall_left: float, distance_wall_front: float, distance_wall_right: float,
                    distance_tail_left: float, distance_tail_front: float, distance_tail_right: float,
-                   distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float) -> List[bool]:
+                   distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float,
+                   score: float) -> List[bool]:
 
             result = self.network.calculate([distance_wall_left, distance_wall_front, distance_wall_right,
                                             distance_tail_left, distance_tail_front, distance_tail_right,
-                                            distance_fruit_left, distance_fruit_front, distance_fruit_right])
+                                            distance_fruit_left, distance_fruit_front, distance_fruit_right,
+                                             score])
 
             return result
 
@@ -123,7 +137,7 @@ class Experiment:
 
 
 def main():
-    ex = Experiment(1)
+    ex = Experiment(3)  # 3 is best seed, 6 was last tested
     ex.main()
 
 

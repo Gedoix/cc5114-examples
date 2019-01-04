@@ -443,7 +443,11 @@ class Network:
 
         # Seed setting
         if seed is not None:
-            self.set_seed(seed)
+            self.__starting_seed = seed
+        else:
+            self.__starting_seed = self.__generator.randint(0, 100000)
+
+        self.__generator.seed(self.__starting_seed)
 
         # Initial input neurons
         for _ in range(input_amount):
@@ -490,7 +494,7 @@ class Network:
         :return: A new network, identical to self
         """
         # Constructs a copy of the network, weights in synapses are the same too
-        new = Network(len(self.__input_neurons), len(self.__output_neurons), seed=self.get_seed())
+        new = Network(len(self.__input_neurons), len(self.__output_neurons), seed=self.__starting_seed)
 
         # Add the same amount of hidden neurons
         for _ in self.__hidden_neurons:
@@ -558,8 +562,8 @@ class Network:
         """
         for synapse in self.__synapses:
             # Chance of linear perturbation
-            if self.choose_with_probability(99.0):
-                perturbation = 0.01 if self.choose_with_probability(50.0) else -0.01
+            if self.choose_with_probability(95.0):
+                perturbation = 0.1 * self.get_random_float()
                 new_weight = synapse.get_weight() + perturbation
             # Chance of re-roll
             else:
@@ -800,14 +804,6 @@ class Network:
 
     # SETTERS
 
-    def set_seed(self, seed: int) -> None:
-        """
-        Sets a network's pseudo-random seed.
-
-        :param seed: New seed
-        """
-        self.__generator.seed(seed)
-
     def set_fitness(self, fitness: float) -> None:
         """
         Sets the fitness of the classifier.
@@ -825,14 +821,6 @@ class Network:
         self.__shared_fitness = shared_fitness
 
     # GETTERS
-
-    def get_seed(self) -> int:
-        """
-        Gets the current pseudo-random seed of the network.
-
-        :return: The seed
-        """
-        return self.__generator.getstate()[0]
 
     def get_fitness(self) -> float:
         """
@@ -894,6 +882,7 @@ class Network:
         return self.__generator.uniform(-2.0, 2.0)
 
     def get_full_details(self) -> List[Tuple[int, bool, int, bool, float, bool]]:
+        # TODO: Docs
         details = []
         # All synapses are scanned
         for index, synapse in enumerate(self.__synapses):

@@ -26,7 +26,7 @@ EAST = 3
 INFINITY: int = 2**63 - 1
 
 # Log mode
-LOG = {"TestAI": False, "Snake": False, "Game": True}
+LOG = {"TestAI": False, "Snake": False, "Game": False}
 
 
 def normalize_distances(x: float) -> float:
@@ -36,11 +36,17 @@ def normalize_distances(x: float) -> float:
     return math.tanh(x)
 
 
+def normalize_score(x: int) -> float:
+    import math
+    return math.tanh(x/100.0)
+
+
 class AI:
 
     def choose(self, distance_wall_left: float, distance_wall_front: float, distance_wall_right: float,
                distance_tail_left: float, distance_tail_front: float, distance_tail_right: float,
-               distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float) -> List[bool]:
+               distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float,
+               score: float) -> List[bool]:
         return [False, True, False]
 
 
@@ -51,7 +57,8 @@ class TestAI(AI):
 
     def choose(self, distance_wall_left: float, distance_wall_front: float, distance_wall_right: float,
                distance_tail_left: float, distance_tail_front: float, distance_tail_right: float,
-               distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float) -> List[bool]:
+               distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float,
+               score: float) -> List[bool]:
         """
         Choice function of the AI agent, asks pygame's input key events to know what to do.
 
@@ -64,13 +71,14 @@ class TestAI(AI):
         :param distance_fruit_left: Ignored
         :param distance_fruit_front: Ignored
         :param distance_fruit_right: Ignored
+        :param score: Ignored
         :return: Left direction if 'a' or '<-' are pressed, Right direction if 'd' or '->' are pressed, and
         front direction for any other key, or none
         """
 
         usage = (distance_wall_left + distance_wall_front + distance_wall_right +
                  distance_tail_left + distance_tail_front + distance_tail_right +
-                 distance_fruit_left + distance_fruit_front + distance_fruit_right)*0.0
+                 distance_fruit_left + distance_fruit_front + distance_fruit_right + score)*0.0
 
         # Results vector
         result = [False, False, False] if usage == 0.0 else [False, False, False]
@@ -122,7 +130,7 @@ class Snake:
         self.ai = ai
         self.living_state = True
 
-    def step(self, fruit: Tuple[int, int]) -> None:
+    def step(self, fruit: Tuple[int, int], score: int) -> None:
         """
         Runs a single in game step for the Snake.
 
@@ -131,6 +139,7 @@ class Snake:
         Advances the snake's body and may add a new section to it's end.
 
         :param fruit: Position coordinates of the fruit
+        :param score: Current score of the game
         """
         # First, the distances to be passed to ai are re-calculated
         # The order is [NORTH, SOUTH, WEST, EAST]
@@ -195,7 +204,8 @@ class Snake:
                                         normalize_distances(distances_to_tail[right]/self.cells_per_side),
                                         normalize_distances(distances_to_fruit[left]/self.cells_per_side),
                                         normalize_distances(distances_to_fruit[front]/self.cells_per_side),
-                                        normalize_distances(distances_to_fruit[right]/self.cells_per_side))
+                                        normalize_distances(distances_to_fruit[right]/self.cells_per_side),
+                                        normalize_score(score))
 
         # Direction is updated
         if next_direction[0]:
@@ -406,7 +416,7 @@ class Game:
                     any_alive = True
 
                     # Step
-                    snakes[i].step(fruits[i])
+                    snakes[i].step(fruits[i], scores[i])
 
                     # If fruit was eaten, it resets and adds to the score
                     if snakes[i].at(fruits[i]):
@@ -475,7 +485,7 @@ class Game:
             # Events are cleared to avoid "not-responding" reaction from the system
             pygame.event.clear()
             # A game step is calculated
-            snake.step(fruit)
+            snake.step(fruit, score)
             # If a fruit was eaten, it resets and adds to the score
             if snake.at(fruit):
                 fruit = self.__generate_fruit(generator)

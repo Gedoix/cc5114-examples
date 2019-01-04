@@ -6,11 +6,13 @@ from neuroevolution_algorithms.neat_network import Network
 
 
 class Neat:
+    __input_amount: int
+    __output_amount: int
 
     __fitness_function: Callable[[List[Network]], List[Union[float, int]]]
 
     __population_size: int
-    __generation_stagnancy_cap: int
+    __fitness_stagnancy_cap: int
     __large_species_size: int
 
     __mutation_change_weights_chance: float
@@ -40,7 +42,7 @@ class Neat:
 
     def __init__(self, input_amount: int, output_amount: int,
                  fitness_function: Callable[[List[Network]], List[Union[float, int]]],
-                 population_size: int = 150, generation_stagnancy_cap: int = 15, large_species_size: int = 5,
+                 population_size: int = 150, fitness_stagnancy_cap: int = 15, large_species_size: int = 5,
                  mutation_change_weights_chance: float = 80.0, mutation_add_synapse_chance: float = 5.0,
                  mutation_add_neuron_chance: float = 3.0, no_crossover_chance: float = 25.0,
                  inter_species_mating_chance: float = 0.1, excess_distance_coefficient: float = 1.0,
@@ -55,7 +57,7 @@ class Neat:
         :param output_amount: Amount of outputs ofr the networks
         :param fitness_function: Fitness function for networks
         :param population_size: Size of the overall population
-        :param generation_stagnancy_cap: Cap of stagnancy in generations
+        :param fitness_stagnancy_cap: Cap of stagnancy as a relative fitness percentage
         :param large_species_size: Size from which a species can be considered large
         :param mutation_change_weights_chance: Chance percentage of the weights of a newborn network of mutating
         :param mutation_add_synapse_chance: Chance percentage of a newborn network to have a new synapse mutated
@@ -70,10 +72,13 @@ class Neat:
         :param seed: Seed for pseudo-random number generation
         """
         # The values are saved
+        self.__input_amount = input_amount
+        self.__output_amount = output_amount
+
         self.__fitness_function = fitness_function
 
         self.__population_size = population_size
-        self.__generation_stagnancy_cap = generation_stagnancy_cap
+        self.__fitness_stagnancy_cap = fitness_stagnancy_cap
         self.__large_species_size = large_species_size
 
         self.__mutation_change_weights_chance = mutation_change_weights_chance
@@ -89,12 +94,15 @@ class Neat:
 
         self.__species_distance_cap = species_distance_cap
 
-        self.__seed = seed
         self.__generator = random.Random()
-        if seed is not None:
-            self.__generator.seed(seed)
 
-        self.__starting_seed = self.__generator.getstate()[0]
+        if seed is not None:
+            self.__seed = seed
+        else:
+            self.__seed = self.__generator.randint(0, 100000)
+
+        self.__starting_seed = self.__seed
+        self.__generator.seed(self.__seed)
 
         self.__generation = 0
 
@@ -107,8 +115,8 @@ class Neat:
         # The population is initialized
         first_species = []
         for i in range(population_size):
-            n = Network.new(input_amount, output_amount, seed=seed)
-            seed += 1
+            n = Network.new(input_amount, output_amount, seed=self.__seed)
+            self.__seed += 1
             self.__population.append(n)
             first_species.append(i)
         self.__symbolic_species.append(first_species)
@@ -142,7 +150,7 @@ class Neat:
         """
         for index, s in enumerate(self.__symbolic_species):
             best = max(s)
-            if best <= 0.75*self.__population_size and len(self.__shared_fitness_sums) >= self.__large_species_size:
+            if best <= 0.5*self.__population_size and len(self.__shared_fitness_sums) >= self.__large_species_size:
                 print("-------------------------Species deleted")
                 self.__total_shared_fitness -= self.__shared_fitness_sums[index]
                 self.__shared_fitness_sums[index] = 0.0
@@ -158,6 +166,7 @@ class Neat:
                                                                  self.__total_shared_fitness)
                                        if self.__total_shared_fitness != 0
                                        else self.__population_size * (1.0 / len(self.__symbolic_species)))
+                offspring_amount -= int(self.__population_size*0.01)
 
                 if keep_best:
                     best_i = max(s)
@@ -199,15 +208,22 @@ class Neat:
                     new_population.append(child)
 
         if len(new_population) < self.__population_size:
-            for i in range(self.__population_size-len(new_population)):
+            great_performers = int((self.__population_size-len(new_population))/2.0)
+            new_performers = (self.__population_size-len(new_population))-great_performers
+
+            for i in range(great_performers):
                 new_population.append(self.__population[self.__population_size-1-i])
+
+            for i in range(new_performers):
+                new_population.append(Network.new(self.__input_amount, self.__output_amount, seed=self.__seed))
+                self.__seed += 1
 
         self.__population = new_population
 
     def __calculate_fitnesses(self) -> None:
         fitnesses = self.__fitness_function(self.__population)
         for i, n in enumerate(self.__population):
-            n.set_fitness(max(n.get_fitness()*0.99, fitnesses[i]))
+            n.set_fitness(max(n.get_fitness()*0.95, fitnesses[i]))
 
     def __sort_population_by_fitness(self) -> None:
         self.__population = self.__quicksort_by_fitness(self.__population)
