@@ -12,6 +12,7 @@ LOG = {"Experiment": True, "ExperimentAI": True}
 
 class Experiment:
 
+    last_best_score: int
     last_used_seed: int
     last_snakes: List[Snake]
     generator: Random
@@ -23,7 +24,7 @@ class Experiment:
             print("[Experiment] Initializing Experiment")
         self.seed = seed
         self.neat = Neat.builder(9, 3, self.fitness_function, seed).\
-            set_species_distance_cap(2.0).\
+            set_species_distance_cap(1.0).\
             build()
         self.generator = random.Random()
         if seed is not None:
@@ -31,6 +32,7 @@ class Experiment:
         self.snake_game = Game(11, 11)
         self.last_snakes = []
         self.last_used_seed = self.generator.getstate()[0]
+        self.last_best_score = 0
 
     def main(self) -> None:
         if LOG["Experiment"]:
@@ -40,17 +42,17 @@ class Experiment:
         stop = 0
         if LOG["Experiment"]:
             print("[Experiment] Entering Main Loop")
-        while max_fitness <= 100:
+        while self.last_best_score <= 100:
             print("Generation = " + str(self.neat.get_generation()))
             print("Maximum Fitness of the Generation = " + str(max_fitness))
-            if max_fitness >= stop:
+            if max_fitness > stop:
                 sim = input("Simulate? (y/n)\n")
 
                 if sim == "y":
                     n = self.neat.get_population()[-1]
                     self.snake_game.show(Snake(11, 11, Experiment.ExperimentAI(n)), self.last_used_seed,
                                          "Generation = " + str(self.neat.get_generation()), fps=3)
-                stop = max_fitness+1
+                stop = max_fitness
 
             print("Shared fitness sums = ", self.neat.get_shared_fitness_sums())
             print("Total shared fitness = ", self.neat.get_total_shared_fitness())
@@ -66,8 +68,11 @@ class Experiment:
         for n in population:
             self.last_snakes.append(Snake(11, 11, Experiment.ExperimentAI(n)))
         self.last_snakes, scores, times = self.snake_game.simulate(self.last_snakes, self.last_used_seed)
-
-        return scores
+        self.last_best_score = max(scores)
+        fitnesses = []
+        for i in range(len(scores)):
+            fitnesses.append(scores[i]/times[i])
+        return fitnesses
 
     class ExperimentAI(AI):
 
@@ -94,7 +99,7 @@ class Experiment:
 
 
 def main():
-    ex = Experiment(0)
+    ex = Experiment(1)
     ex.main()
 
 

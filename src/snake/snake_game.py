@@ -412,11 +412,10 @@ class Game:
                         while snakes[i].covers(fruits[i]):
                             fruits[i] = self.__generate_fruit(generators[i])
                         scores[i] += 1
-                        times[i] = 0
                     # The step counter increases
                     times[i] += 1
                     # Checks if it's time to stop
-                    if times[i] > 100:
+                    if times[i] > max(30*scores[i], 100):
                         snakes[i].kill()
         if LOG["Game"]:
             print("[Game] Quitting Simulation")
