@@ -892,3 +892,14 @@ class Network:
         :return: A random float in [-2, 2]
         """
         return self.__generator.uniform(-2.0, 2.0)
+
+    def get_full_details(self) -> List[Tuple[int, bool, int, bool, float, bool]]:
+        details = []
+        # All synapses are scanned
+        for index, synapse in enumerate(self.__synapses):
+            # Symbolic representation
+            index_1, is_input, index_2, is_output = self.__symbolic_synapses[index]
+            # Weight and availability
+            weight, is_available = synapse.get_weight(), synapse.is_available()
+            details.append((index_1, is_input, index_2, is_output, weight, is_available))
+        return details

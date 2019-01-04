@@ -1,6 +1,6 @@
 import random
 from random import Random
-from typing import List, Optional, Callable, Union
+from typing import List, Optional, Callable, Union, Tuple
 
 from neuroevolution_algorithms.neat_network import Network
 
@@ -104,6 +104,7 @@ class Neat:
         self.__shared_fitness_sums = [0.0]
         self.__total_shared_fitness = 0.0
 
+        # The population is initialized
         first_species = []
         for i in range(population_size):
             n = Network.new(input_amount, output_amount, seed=seed)
@@ -111,9 +112,6 @@ class Neat:
             self.__population.append(n)
             first_species.append(i)
         self.__symbolic_species.append(first_species)
-
-    # def get_best_network_details(self) -> List[Tuple[int, bool, int, bool, float]]:
-    #
 
     def advance_generation(self) -> None:
         """
@@ -285,6 +283,10 @@ class Neat:
 
     def get_total_shared_fitness(self) -> float:
         return self.__total_shared_fitness
+
+    def get_best_network_details(self) -> List[Tuple[int, bool, int, bool, float, bool]]:
+        best_network = self.__population[len(self.__population)-1]
+        return best_network.get_full_details()
 
     def get_generation(self) -> int:
         return self.__generation

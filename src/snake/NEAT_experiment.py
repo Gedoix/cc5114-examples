@@ -71,6 +71,9 @@ class Experiment:
             self.snake_game.show(Snake(11, Experiment.ExperimentAI(n)), self.last_used_seed,
                                  "Generation = " + str(self.neat.get_generation()),
                                  fps=max(4, int(max_fitness / 4)))
+
+        print("The best network generated is specified as:\n", str(self.neat.get_best_network_details()))
+
         if LOG["Experiment"]:
             print("[Experiment] Quitting Experiment")
         self.snake_game.quit()
