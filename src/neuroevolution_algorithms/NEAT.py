@@ -150,7 +150,7 @@ class Neat:
         """
         for index, s in enumerate(self.__symbolic_species):
             best = max(s)
-            if best <= 0.5*self.__population_size and len(self.__shared_fitness_sums) >= self.__large_species_size:
+            if best <= 0.75*self.__population_size and len(self.__shared_fitness_sums) >= self.__large_species_size:
                 print("-------------------------Species deleted")
                 self.__total_shared_fitness -= self.__shared_fitness_sums[index]
                 self.__shared_fitness_sums[index] = 0.0

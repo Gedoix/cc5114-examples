@@ -489,7 +489,7 @@ class Network:
 
     def clone(self) -> "Network":
         """
-        Clones the network, copying all values including reduced base fitnesses.
+        Clones the network, copying all values, not including fitness.
 
         :return: A new network, identical to self
         """
@@ -521,9 +521,6 @@ class Network:
 
             # The symbolic counterpart is added too
             new.__symbolic_synapses.append((index_1, is_input, index_2, is_output))
-
-        new.__fitness = 0.95*self.__fitness
-        new.__shared_fitness = 0.95*self.__shared_fitness
 
         return new
 
