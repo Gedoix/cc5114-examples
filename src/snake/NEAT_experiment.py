@@ -7,7 +7,7 @@ from neuroevolution_algorithms.neat_network import Network
 from snake.snake_game import Game, Snake, AI
 
 
-LOG = {"Experiment": True, "ExperimentAI": True}
+LOG = {"Experiment": True, "ExperimentAI": True, "FrequentSimulations": False}
 
 
 class Experiment:
@@ -57,14 +57,20 @@ class Experiment:
             print("[Experiment] Total shared fitness = ", self.neat.get_total_shared_fitness(), "\n")
             if max_fitness > stop:
                 stop = max_fitness
-                if input("[Experiment] Simulate? (y/n)\n") == "y":
+                if LOG["FrequentSimulations"] and input("[Experiment] Simulate? (y/n)\n") == "y":
                     n = self.neat.get_population()[-1]
                     self.snake_game.show(Snake(11, Experiment.ExperimentAI(n)), self.last_used_seed,
                                          "Generation = " + str(self.neat.get_generation()),
-                                         fps=max(4, int(max_fitness/4)))
+                                         fps=max(4, int(max_fitness / 4)))
 
             self.neat.advance_generation()
             max_fitness = self.neat.get_best_fitness()
+
+        if input("[Experiment] Simulate? (y/n)\n") == "y":
+            n = self.neat.get_population()[-1]
+            self.snake_game.show(Snake(11, Experiment.ExperimentAI(n)), self.last_used_seed,
+                                 "Generation = " + str(self.neat.get_generation()),
+                                 fps=max(4, int(max_fitness / 4)))
         if LOG["Experiment"]:
             print("[Experiment] Quitting Experiment")
         self.snake_game.quit()
