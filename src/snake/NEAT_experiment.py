@@ -24,7 +24,7 @@ class Experiment:
             print("[Experiment] Initializing Experiment")
         self.seed = seed
         self.neat = Neat.builder(9, 3, self.fitness_function, seed).\
-            set_species_distance_cap(1.0).\
+            set_species_distance_cap(0.1).\
             build()
         self.generator = random.Random()
         if seed is not None:
@@ -43,8 +43,9 @@ class Experiment:
         if LOG["Experiment"]:
             print("[Experiment] Entering Main Loop")
         while self.last_best_score <= 100:
-            print("Generation = " + str(self.neat.get_generation()))
+            print("\nGeneration = " + str(self.neat.get_generation()))
             print("Maximum Fitness of the Generation = " + str(max_fitness))
+            print("Compared to a 'stop' value of = " + str(stop))
             if max_fitness > stop:
                 sim = input("Simulate? (y/n)\n")
 
@@ -55,7 +56,7 @@ class Experiment:
                 stop = max_fitness
 
             print("Shared fitness sums = ", self.neat.get_shared_fitness_sums())
-            print("Total shared fitness = ", self.neat.get_total_shared_fitness())
+            print("Total shared fitness = ", self.neat.get_total_shared_fitness(), "\n")
             self.neat.advance_generation()
             max_fitness = max(self.neat.get_fitnesses())
         if LOG["Experiment"]:
@@ -64,7 +65,7 @@ class Experiment:
 
     def fitness_function(self, population: List[Network]) -> List[Union[float, int]]:
         self.last_snakes.clear()
-        self.last_used_seed += 1
+        # self.last_used_seed += 1
         for n in population:
             self.last_snakes.append(Snake(11, 11, Experiment.ExperimentAI(n)))
         self.last_snakes, scores, times = self.snake_game.simulate(self.last_snakes, self.last_used_seed)

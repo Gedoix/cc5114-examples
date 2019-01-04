@@ -7,27 +7,36 @@ from neuroevolution_algorithms.neat_network import Network
 
 class Neat:
 
-    __generator: Random
-    __total_shared_fitness: float
-    __shared_fitness_sums: List[float]
-    __generation: int
-    __species_distance_cap: float
-    __weights_distance_coefficient: float
-    __disjoint_distance_coefficient: float
-    __excess_distance_coefficient: float
-    __inter_species_mating_chance: float
-    __no_crossover_chance: float
-    __mutation_add_neuron_chance: float
-    __mutation_add_synapse_chance: float
-    __mutation_change_weights_chance: float
-    __large_species_size: int
-    __generation_stagnancy_cap: int
-    __population_size: int
     __fitness_function: Callable[[List[Network]], List[Union[float, int]]]
+
+    __population_size: int
+    __generation_stagnancy_cap: int
+    __large_species_size: int
+
+    __mutation_change_weights_chance: float
+    __mutation_add_synapse_chance: float
+    __mutation_add_neuron_chance: float
+
+    __no_crossover_chance: float
+    __inter_species_mating_chance: float
+
+    __excess_distance_coefficient: float
+    __disjoint_distance_coefficient: float
+    __weights_distance_coefficient: float
+
+    __species_distance_cap: float
+
     __starting_seed: Optional[int]
     __seed: Optional[int]
-    __symbolic_species: List[List[int]]
+    __generator: Random
+
+    __generation: int
+
     __population: List[Network]
+    __symbolic_species: List[List[int]]
+
+    __shared_fitness_sums: List[float]
+    __total_shared_fitness: float
 
     def __init__(self, input_amount: int, output_amount: int,
                  fitness_function: Callable[[List[Network]], List[Union[float, int]]],
@@ -47,6 +56,7 @@ class Neat:
         self.__mutation_change_weights_chance = mutation_change_weights_chance
         self.__mutation_add_synapse_chance = mutation_add_synapse_chance
         self.__mutation_add_neuron_chance = mutation_add_neuron_chance
+
         self.__no_crossover_chance = no_crossover_chance
         self.__inter_species_mating_chance = inter_species_mating_chance
 
@@ -66,12 +76,13 @@ class Neat:
 
         self.__population = []
         self.__symbolic_species = []
+
         self.__shared_fitness_sums = [0.0]
         self.__total_shared_fitness = 0.0
 
         first_species = []
         for i in range(population_size):
-            n = Network(input_amount, output_amount, seed=seed, birth_generation=0)
+            n = Network.new(input_amount, output_amount, seed=seed)
             seed += 1
             self.__population.append(n)
             first_species.append(i)
@@ -86,17 +97,14 @@ class Neat:
             fitnesses.append(n.get_fitness())
         return fitnesses
 
-    def get_shared_fitnesses(self) -> List[float]:
-        shared_fitnesses = []
-        for n in self.__population:
-            shared_fitnesses.append(n.get_shared_fitness())
-        return shared_fitnesses
-
     def get_shared_fitness_sums(self) -> List[float]:
         return self.__shared_fitness_sums
 
     def get_total_shared_fitness(self) -> float:
         return self.__total_shared_fitness
+
+    # def get_best_network_details(self) -> List[Tuple[int, bool, int, bool, float]]:
+    #
 
     def advance_generation(self) -> None:
         if self.__generation == 0:
@@ -116,7 +124,7 @@ class Neat:
     def __remove_useless_species(self) -> None:
         for index, s in enumerate(self.__symbolic_species):
             best = max(s)
-            if best <= 0.75*self.__population_size and len(self.__shared_fitness_sums) >= 5:
+            if best <= 0.1*self.__population_size and len(self.__shared_fitness_sums) >= 5:
                 self.__total_shared_fitness -= self.__shared_fitness_sums[index]
                 self.__shared_fitness_sums[index] = 0.0
 
@@ -135,14 +143,14 @@ class Neat:
 
             for _ in range(offspring_amount-1 if keep_best else offspring_amount):
                 if self.choose_with_probability(self.__no_crossover_chance):
-                    child = self.__population[s[self.__generator.randint(0, len(s) - 1)]].clone(self.__generation)
+                    child = self.__population[s[self.__generator.randint(0, len(s) - 1)]].clone()
                 else:
                     child_index = s[self.__generator.randint(0, len(s) - 1)]
                     if len(s) == 1 and child_index == 0:
                         continue
                     while child_index == 0:
                         child_index = s[self.__generator.randint(0, len(s) - 1)]
-                    child = self.__population[child_index].clone(self.__generation)
+                    child = self.__population[child_index].clone()
                     if self.choose_with_probability(self.__inter_species_mating_chance):
                         mate_index = self.__generator.randint(0, len(self.__population) - 1)
                         while mate_index < child_index:
@@ -168,7 +176,7 @@ class Neat:
 
         while len(new_population) < self.__population_size:
             child_index = self.__generator.randint(1, len(self.__population) - 1)
-            child = self.__population[child_index].clone(self.__generation)
+            child = self.__population[child_index].clone()
             mate_index = self.__generator.randint(0, len(self.__population) - 1)
             while mate_index < child_index:
                 mate_index = self.__generator.randint(0, len(self.__population) - 1)
@@ -197,11 +205,13 @@ class Neat:
         for i, n in enumerate(self.__population):
             was_added = False
             for s in self.__symbolic_species:
-                excess_distance, disjoint_distance, average_weight_difference = Network.compare(n,
-                                                                                                self.__population[s[0]])
+                excess_distance, disjoint_distance, average_weight_difference = \
+                    Network.compare(n, self.__population[max(s)])
                 distance = (excess_distance * self.__excess_distance_coefficient +
                             disjoint_distance * self.__disjoint_distance_coefficient +
                             average_weight_difference * self.__weights_distance_coefficient)
+                # TODO: Annotation
+                # print("Distance = ", str(distance))
                 if distance <= self.__species_distance_cap:
                     s.append(i)
                     was_added = True
