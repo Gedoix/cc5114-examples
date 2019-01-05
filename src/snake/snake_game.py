@@ -31,8 +31,6 @@ LOG = {"TestAI": False, "Snake": False, "Game": False}
 
 def normalize_distances(x: float) -> float:
     import math
-    # import numpy as np
-    # return (math.exp(-np.logaddexp(0.0, -4.9*float(x)))-0.5)*2.0
     return math.tanh(x)
 
 
