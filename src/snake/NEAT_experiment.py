@@ -157,7 +157,7 @@ class Experiment:
 
             plt.title("Generational fitness for board size " + str(BOARD_SIZE) +
                       " using seed " + str(SEED))
-            plt.xlabel("Number of Iterations")
+            plt.xlabel("Generation")
             plt.ylabel("Fitness")
             ax.grid(True)
 
