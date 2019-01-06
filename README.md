@@ -106,7 +106,20 @@ regarding how to plot a chess board using the matplotlib package.
 
 Both of these files are executable.
 
-Executing the first file 
+### `neuroevolution_algorithms`
+
+This package contains an implementation of the N.E.A.T. algorithm as 
+described in [this](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf) 
+paper.
+
+The classes the algorithm uses are inside the file `neat_network.py`, and the 
+main algorithm in `NEAT.py`
+
+### `snake`
+
+This package contains both an implementation of the classic Snake game, 
+executable in the file `snake_game.py` for testing, and a test of the N.E.A.T. 
+algorithm inside the Snake game's environment.
 
 ## Description of other Non-Source Files
 ---
@@ -134,6 +147,8 @@ dataset, analyzed when testing the `dataset_predictor` package.
 Contains `.png` saves of plots generated from executable files in `src` and some 
 `.pdf` files with execution prints.
 
+May also contain `.gif` and `.txt` saved results.
+
 ### `PDF` Documents
 
 The files:
@@ -144,7 +159,7 @@ The files:
 
 * `Homework_3_Neural_Networks.pdf` [here](Homework_3_Neural_Networks.pdf)
 
-Contain further documentation and analysis on the plts and experiments 
+Contain further documentation and analysis on the algorithms and experiments 
 implemented in the project.
 
 ## Getting Started
@@ -155,9 +170,11 @@ local machine for development and testing purposes.
 
 ### Prerequisites
 
-This repo's project was and is being developed using [Python 36](https://www.python.org/downloads/), together 
+This repo's project was and is being developed using 
+[Python 36](https://www.python.org/downloads/), together 
 with the packages [numpy](http://www.numpy.org/), 
-[matplotlib](https://matplotlib.org/) and [tqdm](https://github.com/tqdm/tqdm).
+[matplotlib](https://matplotlib.org/), 
+[tqdm](https://github.com/tqdm/tqdm) and [PyGame](https://www.pygame.org/news).
 
 All of this was put together easily through [Jetbrain's](https://www.jetbrains.com/)
 IDE for Python, [PyCharm](https://www.jetbrains.com/pycharm/)
@@ -194,9 +211,11 @@ tutorial
  so PyCharm can configure the interpreter to Python 3.6
  
 * Accessing the project settings inside the toolbar, going into the 
-`interpreter` tab, and clicking on the plus `add package` button will allow to 
-easily install [numpy](http://www.numpy.org/),[matplotlib](https://matplotlib.org/) 
-and [tqdm](https://github.com/tqdm/tqdm), just by searching them by name.
+`interpreter` tab, and clicking on the option `project interpreter`, `show all...`
+will allow the project to set the interpreter included with the code.
+
+* In this menu, simply press the `plus` icon, select `existing environment`, 
+and set the desired directory to the project's `venv/bin/python` directory. 
 
 * After this the projects imports should all be working. Time to test it out!
 
@@ -227,6 +246,10 @@ run are:
 
 * `genetic_algorithm.n_queen_optimizer.py` [here](src/genetic_algorithms/n_queen_optimizer.py)
 
+* `snake.snake_game.py` [here](src/snake/snake_game.py)
+
+* `snake.NEAT_experiment.py` [here](src/snake/NEAT_experiment.py)
+
 All of these files can generate plots and printed proof of the workings
 of the code being tested
 
@@ -241,6 +264,7 @@ generated plots to the `plots` directory, overwriting any previous saves
 * [NumPy](http://www.numpy.org/) - Scientific numeric computation package
 * [MatPlotLib](https://matplotlib.org/) - Plotting package
 * [tqdm](https://github.com/tqdm/tqdm) - Loading bar printer and manager
+* [PyGame](https://www.pygame.org/news) - Snake game simulation
 * [README.md Template](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2) - Template for good practices when writing a README
 
 ## Versioning
