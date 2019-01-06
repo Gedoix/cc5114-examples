@@ -29,24 +29,62 @@ INFINITY: int = 2**63 - 1
 LOG = {"TestAI": False, "Snake": False, "Game": False}
 
 
+# UTILITY FUNCTIONS
+
 def normalize_distances(x: float) -> float:
+    """
+    Uses the hyperbolic tangent function to 0-1 normalize distances in the game.
+
+    :param x: Distance to normalize
+    :return: Normalized result
+    """
     import math
     return math.tanh(x)
 
 
 def normalize_score(x: int) -> float:
+    """
+    Uses the hyperbolic tangent function to 0-1 normalize score values in the game.
+
+    :param x: Score to normalize
+    :return: Normalized result
+    """
     import math
     return math.tanh(x/100.0)
 
 
+# SNAKE AI CLASS
+
 class AI:
+    """
+    AI class.
+
+    Meant to be over-ridden by sub-classes.
+    """
 
     def choose(self, distance_wall_left: float, distance_wall_front: float, distance_wall_right: float,
                distance_tail_left: float, distance_tail_front: float, distance_tail_right: float,
                distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float,
                score: float) -> List[bool]:
+        """
+        Main method ofr an AI, takes a decision on which direction to follow based on the normalized parameters.
+
+        :param distance_wall_left: Distance to the wall on the left
+        :param distance_wall_front: Distance to the wall on the front
+        :param distance_wall_right: Distance to the wall on the right
+        :param distance_tail_left: Distance to a tail segment on the left
+        :param distance_tail_front: Distance to a tail segment on the front
+        :param distance_tail_right: Distance to a tail segment on the right
+        :param distance_fruit_left: Distance to a fruit on the left
+        :param distance_fruit_front: Distance to a fruit on the front
+        :param distance_fruit_right: Distance to a fruit to the right
+        :param score: Current normalized score (snake length)
+        :return: The direction the snake should follow
+        """
         return [False, True, False]
 
+
+# AI CLASS FOR TESTING
 
 class TestAI(AI):
     """
@@ -58,7 +96,7 @@ class TestAI(AI):
                distance_fruit_left: float, distance_fruit_front: float, distance_fruit_right: float,
                score: float) -> List[bool]:
         """
-        Choice function of the AI agent, asks pygame's input key events to know what to do.
+        Choice function of the AI agent, asks terminal input to know what to do.
 
         :param distance_wall_left: Ignored
         :param distance_wall_front: Ignored
@@ -70,8 +108,8 @@ class TestAI(AI):
         :param distance_fruit_front: Ignored
         :param distance_fruit_right: Ignored
         :param score: Ignored
-        :return: Left direction if 'a' or '<-' are pressed, Right direction if 'd' or '->' are pressed, and
-        front direction for any other key, or none
+        :return: Left direction if 'a' is inputted, right direction if 'd' is inputted, and
+        front direction for any other input
         """
 
         usage = (distance_wall_left + distance_wall_front + distance_wall_right +
@@ -98,6 +136,8 @@ class TestAI(AI):
         return result
 
 
+# GAME ACTOR CLASS
+
 class Snake:
     """
     Snake class for running inside the Snake game.
@@ -109,6 +149,8 @@ class Snake:
     current_direction: int
     ai: AI
     living_state: bool
+
+    # CONSTRUCTOR
 
     def __init__(self, cells_per_side: int, ai: AI):
         """
@@ -127,6 +169,8 @@ class Snake:
         self.current_direction = NORTH
         self.ai = ai
         self.living_state = True
+
+    # MAIN BEHAVIOUR
 
     def step(self, fruit: Tuple[int, int], score: int) -> None:
         """
@@ -248,6 +292,8 @@ class Snake:
         if self.positions[0] == fruit:
             self.positions.append(last_edited_position)
 
+    # POSITION CHECKS
+
     def at(self, cell: Tuple[int, int]) -> bool:
         """
         Checks whether the snake's head is at a particular position.
@@ -269,6 +315,8 @@ class Snake:
                 return True
         return False
 
+    # LIVING STATE MANAGEMENT
+
     def is_alive(self) -> bool:
         """
         Checks whether the snake is alive.
@@ -282,6 +330,8 @@ class Snake:
         Kills the snake object.
         """
         self.living_state = False
+
+    # GETTERS
 
     def get_tail(self) -> List[Tuple[int, int]]:
         """
@@ -300,6 +350,8 @@ class Snake:
         return self.ai
 
 
+# MAIN GAME INSTANCE CLASS
+
 class Game:
     """
     Game instance class for Snake, uses Snake type objects in it's main loop.
@@ -309,6 +361,8 @@ class Game:
     cells_per_side: int
     screen: Optional[pygame.display.__class__]
     font: Optional[pygame.font.FontType]
+
+    # CONSTRUCTOR
 
     def __init__(self, cells_per_side: int):
         """
@@ -335,8 +389,15 @@ class Game:
             print("[Game] Setting up Font")
         self.font = pygame.font.SysFont("Consolas", 100)
 
+    # GAME QUITTER
+
     @staticmethod
     def quit():
+        """
+        Ends pygame's initialization in the current execution process.
+
+        Must be called when Game won't be used anymore.
+        """
         # Pygame is closed
         if LOG["Game"]:
             print("[Game] Quitting Pygame Font")
@@ -344,22 +405,6 @@ class Game:
         if LOG["Game"]:
             print("[Game] Quitting Pygame")
         pygame.quit()
-
-    def open_display(self):
-        if LOG["Game"]:
-            print("[Game] Initializing Pygame Display")
-        pygame.display.init()
-        # Pygame display and text generator are created
-        if LOG["Game"]:
-            print("[Game] Setting up Pygame Display")
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
-        pygame.display.set_caption("Snake")
-
-    @staticmethod
-    def close_display():
-        if LOG["Game"]:
-            print("[Game] Quitting Pygame Display")
-        pygame.display.quit()
 
     def simulate(self, snakes: List[Snake], seed: int) -> Tuple[List[int], List[int]]:
         """
@@ -448,11 +493,12 @@ class Game:
         if LOG["Game"]:
             print("[Game] Initializing Graphic Simulation")
 
-        self.open_display()
+        self.__open_display()
 
         # Step clock
         if LOG:
             print("[Game] Setting up Pygame Clock")
+
         clock = pygame.time.Clock()
 
         # The fruit is generated
@@ -467,7 +513,9 @@ class Game:
         # Main loop
         if LOG:
             print("[Game] Entering Main Loop")
+
         while snake.is_alive():
+
             # A frame is rendered
             self.screen.fill(COLOR_BLACK)
             self.__draw_board(COLOR_WHITE)
@@ -475,15 +523,20 @@ class Game:
             self.__draw_snake(COLOR_GREEN, snake, COLOR_DARK_GREEN)
             self.__draw_score(COLOR_WHITE, score)
             self.__draw_subtitle(COLOR_WHITE, subtitle)
+
             pygame.display.update()
             clock.tick(fps)
+
             # The display can be closed
             if pygame.event.peek(pygame.QUIT):
                 break
+
             # Events are cleared to avoid "not-responding" reaction from the system
             pygame.event.clear()
+
             # A game step is calculated
             snake.step(fruit, score)
+
             # If a fruit was eaten, it resets and adds to the score
             if snake.at(fruit):
                 fruit = self.__generate_fruit(generator)
@@ -494,24 +547,48 @@ class Game:
         # End game screen
         if LOG:
             print("[Game] Drawing End Screen")
+
         self.screen.fill(COLOR_RED)
         self.__draw_score(COLOR_BLACK, score)
+
         pygame.display.update()
         clock.tick(60)
 
         if LOG["Game"]:
             print("[Game] Quitting Graphic Simulation")
 
-        self.close_display()
+        self.__close_display()
 
-    def __generate_fruit(self, generator: random.Random) -> Tuple[int, int]:
-        """
-        Generates a fruit's position from a pseudo-random generator.
+    # DISPLAY MANAGEMENT
 
-        :param generator: Pseudo-random number generator
-        :return: A position within the board, uniformly chosen
+    def __open_display(self):
         """
-        return generator.randint(0, self.cells_per_side - 1), generator.randint(0, self.cells_per_side - 1)
+        Opens a new display for simulating a game.
+        """
+
+        if LOG["Game"]:
+            print("[Game] Initializing Pygame Display")
+
+        pygame.display.init()
+
+        # Pygame display and text generator are created
+        if LOG["Game"]:
+            print("[Game] Setting up Pygame Display")
+
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+        pygame.display.set_caption("Snake")
+
+    @staticmethod
+    def __close_display():
+        """
+        Closes any existing displays.
+        """
+        if LOG["Game"]:
+            print("[Game] Quitting Pygame Display")
+        pygame.display.quit()
+
+    # DRAW FUNCTIONS
 
     def __draw_board(self, color: Tuple[int, int, int]) -> None:
         """
@@ -593,6 +670,19 @@ class Game:
         text_surface = self.font.render(subtitle, False, color)
         self.screen.blit(text_surface, (0, 100))
 
+    # UTILITY FRUIT GENERATOR
+
+    def __generate_fruit(self, generator: random.Random) -> Tuple[int, int]:
+        """
+        Generates a fruit's position from a pseudo-random generator.
+
+        :param generator: Pseudo-random number generator
+        :return: A position within the board, uniformly chosen
+        """
+        return generator.randint(0, self.cells_per_side - 1), generator.randint(0, self.cells_per_side - 1)
+
+
+# MAIN TESTING FUNCTION
 
 def __test():
     """
@@ -608,6 +698,7 @@ def __test():
     __test_game.show(__test_snake, __test_seed, "Test run of the program", __test_fps)
 
 
-# Execution as main
+# EXECUTION
+
 if __name__ == '__main__':
     __test()
