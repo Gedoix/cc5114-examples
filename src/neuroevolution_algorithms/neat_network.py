@@ -2,25 +2,14 @@ import random
 from typing import List, Any, Tuple, Union
 
 
-def find(l: List[Any], obj: Any) -> int:
-    """
-    Function for finding a value inside a list.
-
-    :param l: List to look through
-    :param obj: Value to find
-    :return: The value's index if found, -1 if not
-    """
-    try:
-        return l.index(obj)
-    except ValueError:
-        return -1
-
-
 class GeneticNeuron:
+    """
+    Genetic Neuron super-class, meant to be treated as an abstract class.
+    """
 
     __calculations: int
 
-    # Constructor
+    # CONSTRUCTOR
 
     def __init__(self):
         """
@@ -28,7 +17,7 @@ class GeneticNeuron:
         """
         self.__calculations = 0
 
-    # Calculations counter
+    # CALCULATIONS COUNTER
 
     def set_calculations(self, calculations: int) -> None:
         """
@@ -46,7 +35,7 @@ class GeneticNeuron:
         """
         return self.__calculations
 
-    # Main behaviour
+    # MAIN BEHAVIOUR
 
     def calculate(self) -> None:
         """
@@ -65,6 +54,8 @@ class GeneticNeuron:
         import numpy as np
         import math
         return math.exp(-np.logaddexp(0.0, -4.9*x))
+
+    # INPUT/OUTPUT MANAGEMENT
 
     def add_input(self, synapse: "GeneticSynapse") -> None:
         """
@@ -100,10 +91,17 @@ class GeneticNeuron:
 
 
 class InputNeuron(GeneticNeuron):
+    """
+    Input Genetic Neuron on a network.
+
+    Can save a value and pass it along to it's output synapses.
+    """
 
     __outputs: List["GeneticSynapse"]
 
     __value: float
+
+    # CONSTRUCTOR
 
     def __init__(self):
         """
@@ -115,13 +113,7 @@ class InputNeuron(GeneticNeuron):
         self.__outputs = []
         self.__value = 0.0
 
-    def set_value(self, value: float) -> None:
-        """
-        Sets a value for the Neuron to spread.
-
-        :param value: New input value of the network.
-        """
-        self.__value = value
+    # OUTPUT MANAGEMENT
 
     def add_output(self, synapse: "GeneticSynapse") -> None:
         """
@@ -139,6 +131,16 @@ class InputNeuron(GeneticNeuron):
         """
         self.__outputs.remove(synapse)
 
+    # MAIN BEHAVIOUR
+
+    def set_value(self, value: float) -> None:
+        """
+        Sets a value for the Neuron to spread.
+
+        :param value: New input value of the network.
+        """
+        self.__value = value
+
     def calculate(self):
         """
         Simply relays the value to all outputs.
@@ -149,17 +151,26 @@ class InputNeuron(GeneticNeuron):
 
 
 class HiddenNeuron(GeneticNeuron):
+    """
+    Hidden Neuron of a network.
+
+    Reads weighed inputs and writes their modified sum as an output.
+    """
 
     __outputs: List["GeneticSynapse"]
     __inputs: List["GeneticSynapse"]
 
+    # CONSTRUCTOR
+
     def __init__(self):
         """
-        Constructor for a Hidden Neuron, sets default values
+        Constructor for a Hidden Neuron, sets default values.
         """
         super().__init__()
         self.__inputs = []
         self.__outputs = []
+
+    # INPUT/OUTPUT MANAGEMENT
 
     def add_input(self, synapse: "GeneticSynapse") -> None:
         """
@@ -193,6 +204,8 @@ class HiddenNeuron(GeneticNeuron):
         """
         self.__outputs.remove(synapse)
 
+    # MAIN BEHAVIOUR
+
     def calculate(self) -> None:
         """
         Relays values from inputs, adds them up, normalizes the output, and then relays it out.
@@ -209,10 +222,15 @@ class HiddenNeuron(GeneticNeuron):
 
 
 class OutputNeuron(GeneticNeuron):
+    """
+    Output Neuron of a network, can receive values, transform them into answers, and save them.
+    """
 
     __inputs: List["GeneticSynapse"]
 
     __result: bool
+
+    # CONSTRUCTOR
 
     def __init__(self):
         """
@@ -221,6 +239,8 @@ class OutputNeuron(GeneticNeuron):
         super().__init__()
         self.__inputs = []
         self.__result = False
+
+    # INPUTS MANAGEMENT
 
     def add_input(self, synapse: "GeneticSynapse") -> None:
         """
@@ -237,6 +257,8 @@ class OutputNeuron(GeneticNeuron):
         :param synapse: Old input synapse
         """
         self.__inputs.remove(synapse)
+
+    # MAIN BEHAVIOUR
 
     def calculate(self) -> None:
         """
@@ -260,6 +282,13 @@ class OutputNeuron(GeneticNeuron):
 
 
 class GeneticSynapse:
+    """
+    Synapse connecting two neurons.
+
+    Stores weights to apply to input values.
+
+    May become unavailable.
+    """
 
     __availability: bool
     __weighted_value: float
@@ -267,7 +296,7 @@ class GeneticSynapse:
     __weight: float
     __start_neuron: GeneticNeuron
 
-    # Constructor
+    # CONSTRUCTOR
 
     def __init__(self, start_neuron: GeneticNeuron, weight: float, end_neuron: GeneticNeuron):
         """
@@ -290,7 +319,7 @@ class GeneticSynapse:
         self.__weighted_value = 0.0
         self.__availability = True
 
-    # Relay system
+    # RELAY SYSTEM
 
     def relay(self, result: float) -> None:
         """
@@ -312,7 +341,7 @@ class GeneticSynapse:
             self.__start_neuron.calculate()
         return self.__weighted_value if self.is_available() else 0.0
 
-    # Availability management
+    # AVAILABILITY MANAGEMENT
 
     def enable(self) -> None:
         """
@@ -388,6 +417,11 @@ class GeneticSynapse:
 
 
 class Network:
+    """
+    Network object.
+
+    Manages a graph of neurons and synapses.
+    """
 
     # All Neurons in the network
     __input_neurons: List[InputNeuron] = []
@@ -467,7 +501,7 @@ class Network:
                 self.__synapses.append(GeneticSynapse(i, self.get_random_float(), o))
                 self.__symbolic_synapses.append((i_index, True, o_index, True))
 
-    # FACTORY METHOD
+    # FACTORY-LIKE METHOD
 
     @staticmethod
     def new(input_amount: int, output_amount: int, seed: int = None) -> "Network":
@@ -573,7 +607,7 @@ class Network:
         Adds a new synapse at a random available position, if the position was taken, the weight of the original
         synapse is re-rolled, and the synapse is re-activated too.
         """
-        # If there's enough hidden neurons to choose among them
+        # If there's enough hidden neurons to choose from
         if len(self.__hidden_neurons) > 1:
             i = self.__generator.randint(0, len(self.__hidden_neurons) + len(self.__input_neurons) - 1)
             o = self.__generator.randint(0, len(self.__hidden_neurons) + len(self.__output_neurons) - 1)
@@ -879,7 +913,11 @@ class Network:
         return self.__generator.uniform(-2.0, 2.0)
 
     def get_full_details(self) -> List[Tuple[int, bool, int, bool, float, bool]]:
-        # TODO: Docs
+        """
+        Gets a full abstract representation of the network, could be used to rebuild it later.
+
+        :return: Abstract representation of the network.
+        """
         details = []
         # All synapses are scanned
         for index, synapse in enumerate(self.__synapses):
@@ -889,3 +927,17 @@ class Network:
             weight, is_available = synapse.get_weight(), synapse.is_available()
             details.append((index_1, is_input, index_2, is_output, weight, is_available))
         return details
+
+
+def find(l: List[Any], obj: Any) -> int:
+    """
+    Function for finding a value inside a list.
+
+    :param l: List to look through
+    :param obj: Value to find
+    :return: The value's index if found, -1 if not
+    """
+    try:
+        return l.index(obj)
+    except ValueError:
+        return -1
