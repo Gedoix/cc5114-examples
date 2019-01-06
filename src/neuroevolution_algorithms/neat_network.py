@@ -450,6 +450,8 @@ class Network:
         """
         Constructor of a Network, sets up default parameters.
 
+        ISN'T MEANT TO BE USED FROM OUTSIDE, USE '.new(...)' INSTEAD.
+
         :param input_amount: Amount of inputs to receive
         :param output_amount: Amount of outputs to produce
         :param seed: Seed of the pseudo-random generator
